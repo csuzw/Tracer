@@ -100,7 +100,8 @@
   <ItemGroup>
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Hubs\TraceHub.cs" />
-    <Compile Include="Modules\SampleModule.cs" />
+    <Compile Include="Modules\FooBarModule.cs" />
+    <Compile Include="Modules\RootModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -115,6 +116,10 @@
     <Folder Include="Scripts\Vendor\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Tracer.Common\Tracer.Common.csproj">
+      <Project>{9354d082-eeaf-4272-83a8-43c2b2d9e9c3}</Project>
+      <Name>Tracer.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Tracer.Logging\Tracer.Logging.csproj">
       <Project>{d6fa3877-c1d1-409d-8546-d349bdcd73cf}</Project>
       <Name>Tracer.Logging</Name>

@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Tracer.Common;
 
 namespace Tracer.Logging.Adapters
 {
@@ -44,13 +45,13 @@ namespace Tracer.Logging.Adapters
             {
                 if (ct.IsFaulted)
                 {
-                    Console.WriteLine("There was an error opening the connection:{0}", ct.Exception.GetBaseException());
+                    Console.WriteLine("There was an error opening the connection: {0}", ct.Exception.GetBaseException());
                 }
             });
 
             if (connection.State != ConnectionState.Connected) return;
 
-            await hub.Invoke("Send", message).ContinueWith(ht =>
+            await hub.Invoke("Send", new TraceMessage { Message = message }).ContinueWith(ht =>
             {
                 if (ht.IsFaulted)
                 {
