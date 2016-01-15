@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Tracer.Logging.Adapters
+namespace Tracer.Fody.Adapters
 {
     public class LogManagerAdapter
     {

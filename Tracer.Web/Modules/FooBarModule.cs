@@ -11,12 +11,12 @@ namespace Tracer.Web.Modules
         {
             _foo = new FooLogic();
 
-            Get["/{input:int}"] = parameters => FooBar(parameters.input);
+            Get["/{input:int}"] = parameters => FooBar(parameters);
         }
 
-        public string FooBar(int input)
+        public string FooBar(dynamic parameters)
         {
-            var message = _foo.Foo(input);
+            var message = _foo.Foo(parameters.input);
 
             return message;
         }

@@ -1,4 +1,4 @@
-﻿namespace Tracer.Common
+﻿namespace Tracer.Common.Messages
 {
     public class TraceMessage
     {

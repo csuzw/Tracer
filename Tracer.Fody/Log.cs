@@ -1,4 +1,4 @@
-﻿namespace Tracer.Logging
+﻿namespace Tracer.Fody
 {
     public static class Log
     {

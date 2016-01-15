@@ -5,7 +5,6 @@ using Nancy.Conventions;
 using Nancy.TinyIoc;
 using System.Reflection;
 using System.IO;
-using TracerAttributes;
 
 namespace Tracer.Web
 {
@@ -28,7 +27,6 @@ namespace Tracer.Web
 
     public class ServiceRootPathProvider : IRootPathProvider
     {
-        [NoTrace]
         public string GetRootPath()
         {
             var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();

@@ -5,9 +5,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracer.Web", "Tracer.Web\Tr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracer.Application", "Tracer.Application\Tracer.Application.csproj", "{73EEE6E7-DE96-4C67-AF4F-78E0A1529604}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracer.Logging", "Tracer.Logging\Tracer.Logging.csproj", "{D6FA3877-C1D1-409D-8546-D349BDCD73CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracer.Fody", "Tracer.Fody\Tracer.Fody.csproj", "{D6FA3877-C1D1-409D-8546-D349BDCD73CF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracer.Common", "Tracer.Common\Tracer.Common.csproj", "{9354D082-EEAF-4272-83A8-43C2B2D9E9C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracer.PostSharp", "Tracer.PostSharp\Tracer.PostSharp.csproj", "{FDBE6693-DAEF-4361-8A21-8345A82FCA93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,10 @@ Global
 		{9354D082-EEAF-4272-83A8-43C2B2D9E9C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9354D082-EEAF-4272-83A8-43C2B2D9E9C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9354D082-EEAF-4272-83A8-43C2B2D9E9C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDBE6693-DAEF-4361-8A21-8345A82FCA93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDBE6693-DAEF-4361-8A21-8345A82FCA93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDBE6693-DAEF-4361-8A21-8345A82FCA93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDBE6693-DAEF-4361-8A21-8345A82FCA93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

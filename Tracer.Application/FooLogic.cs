@@ -1,6 +1,4 @@
-﻿using TracerAttributes;
-
-namespace Tracer.Application
+﻿namespace Tracer.Application
 {
     public class FooLogic
     {
