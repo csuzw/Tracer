@@ -106,10 +106,14 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".bowerrc" />
     <None Include="App.config" />
+    <None Include="bower.json" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Scripts\Vendor\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Tracer.Logging\Tracer.Logging.csproj">
       <Project>{d6fa3877-c1d1-409d-8546-d349bdcd73cf}</Project>
@@ -122,10 +126,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
-    <Content Include="Scripts\jquery-2.1.3.min.js" />
-    <Content Include="Scripts\jquery.signalR-2.2.0.js" />
-    <Content Include="Scripts\jquery.signalR-2.2.0.min.js" />
-    <Content Include="Scripts\tracer.js" />
+    <Content Include="Scripts\Public\tracer.js" />
     <Content Include="Views\trace.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,0 +1,25 @@
+{
+  "name": "Tracer.Web",
+  "homepage": "https://github.com/csuzw/Tracer",
+  "authors": [
+    "csuzw <rjcarrington@gmail.com>"
+  ],
+  "description": "Tracing Demo",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "Scripts/Vendor/",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.2.0",
+    "signalr": "~2.2.0",
+    "bootstrap": "~3.3.6"
+  }
+}
