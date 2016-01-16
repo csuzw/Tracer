@@ -38,4 +38,4 @@ using Tracer.PostSharp;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 // PostSharp
-[assembly: Trace(AttributeTargetTypes = "Tracer.Web.Modules.*")]
+[assembly: TraceBoundary(AttributeTargetTypes = "Tracer.Web.Modules.*")]

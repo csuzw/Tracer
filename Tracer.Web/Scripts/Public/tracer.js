@@ -1,15 +1,14 @@
 ﻿$(function () {
     var conn = $.connection.traceHub;
     var fm = $("#message");
-    $("#clearmessages").click(function () { return $("#discussion").empty(); });
+    $("#clearmessages").click(function () { return $("#messages").empty(); });
     $.connection.hub.start().done(function () {
         return $("#sendmessage").click(function() {
-            conn.server.send({ Message: fm.val() });
+            conn.server.send({ TraceId: "testId", MethodId: "testId2", Message: fm.val() });
             return fm.val("").focus();
         });
     });
     return conn.client.broadcastMessage = function (message) {
-        var messageHtml = $("<div />").text(message.Message).html();
-        return $("#discussion").append('<blockquote class="alert-info" style="padding:10px;margin-bottom:10px;"><strong>' + messageHtml + "</blockquote>");
+        return $("#messages").append("<tr><td>" + message.TraceId + "</td><td>" + message.MethodId + "</td><td>" + message.Message + "</td></tr>");
     }
 });
