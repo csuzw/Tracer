@@ -1,10 +1,11 @@
 ﻿using PostSharp.Aspects;
 using PostSharp.Extensibility;
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Tracer.Common.Extensions;
 using Tracer.Common.Messages;
-using Tracer.Common.SignalR;
 
 namespace Tracer.PostSharp
 {
@@ -14,13 +15,13 @@ namespace Tracer.PostSharp
     {
         private static readonly ThreadLocal<Guid> _traceId = new ThreadLocal<Guid>(() => Guid.NewGuid());
 
-        private string _methodInfo;
+        private string _methodName;
 
         public override void RuntimeInitialize(MethodBase method)
         {
-            _methodInfo = string.Format("{0}.{1}", method.DeclaringType, method.Name);
+            _methodName = string.Format("{0}.{1}", method.DeclaringType, method.Name);
 
-            Console.WriteLine("{0} aspect applied to {1}", GetType().Name, _methodInfo);
+            Console.WriteLine("{0} aspect applied to {1}", GetType().Name, _methodName);
         }
 
         public override void OnEntry(MethodExecutionArgs args)
@@ -28,8 +29,16 @@ namespace Tracer.PostSharp
             var traceId = _traceId.Value;
             var methodId = Guid.NewGuid();
 
-            var message = string.Format("OnEntry: {0} with parameters [{1}]", _methodInfo, string.Join(", ", args.Arguments));
-            Broadcast(traceId, methodId, message);
+            var message = new TraceMessage
+            {
+                TraceId = traceId.ToString(),
+                MethodId = methodId.ToString(),
+                TraceEvent = TraceEvent.OnMethodEntry,
+                MethodName = _methodName,
+                Arguments = args.Arguments.Select(a => a.ToString()).ToList()
+            };
+
+            message.Broadcast();
 
             args.MethodExecutionTag = new TraceAttributeContext(traceId, methodId);
         }
@@ -39,28 +48,35 @@ namespace Tracer.PostSharp
             var context = (TraceAttributeContext)args.MethodExecutionTag;
             context.Stopwatch.Stop();
 
-            var message = string.Format("OnSuccess: {0} returned [{1}] and took {2}ms", _methodInfo, args.ReturnValue, context.Stopwatch.ElapsedMilliseconds);
-            Broadcast(context.TraceId, context.MethodId, message);
+            var message = new TraceMessage
+            {
+                TraceId = context.TraceId.ToString(),
+                MethodId = context.MethodId.ToString(),
+                TraceEvent = TraceEvent.OnMethodSuccess,
+                MethodName = _methodName,
+                ReturnValue = args.ReturnValue.ToString(),
+                TimeTakenInMilliseconds = context.Stopwatch.ElapsedMilliseconds
+            };
+
+            message.Broadcast();
         }
 
         public override void OnException(MethodExecutionArgs args)
         {
             var context = (TraceAttributeContext)args.MethodExecutionTag;
             context.Stopwatch.Stop();
+            
+            var message = new TraceMessage
+            {
+                TraceId = context.TraceId.ToString(),
+                MethodId = context.MethodId.ToString(),
+                TraceEvent = TraceEvent.OnMethodException,
+                MethodName = _methodName,
+                Exception = args.Exception.ToString(),
+                TimeTakenInMilliseconds = context.Stopwatch.ElapsedMilliseconds
+            };
 
-            var message = string.Format("OnException: {0} with exception [{1}] and took {2}ms", _methodInfo, args.Exception, context.Stopwatch.ElapsedMilliseconds);
-            Broadcast(context.TraceId, context.MethodId, message);
-        }
-
-        protected virtual void Broadcast(Guid traceId, Guid methodId, string message)
-        {
-            SignalRClient.Instance.BroadcastTraceMessage(
-                new TraceMessage
-                {
-                    TraceId = traceId.ToString(),
-                    MethodId = methodId.ToString(),
-                    Message = message
-                });
+            message.Broadcast();
         }
     }
 }

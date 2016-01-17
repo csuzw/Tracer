@@ -48,6 +48,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\TaskExtensions.cs" />
+    <Compile Include="Extensions\TraceMessageExtensions.cs" />
+    <Compile Include="Messages\TraceEvent.cs" />
     <Compile Include="Messages\TraceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalR\SignalRClient.cs" />
