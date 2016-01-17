@@ -17,7 +17,7 @@ namespace Tracer.Web.Modules
         public string FooBar(dynamic parameters)
         {
             var message = _foo.Foo(parameters.input);
-
+            
             return message;
         }
     }

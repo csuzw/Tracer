@@ -1,15 +1,14 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Tracer.PostSharp
 {
     public class TraceAttributeContext
     {
-        public Guid TraceId { get; private set; }
-        public Guid MethodId { get; private set; }
+        public string TraceId { get; private set; }
+        public string MethodId { get; private set; }
         public Stopwatch Stopwatch { get; private set; }
 
-        public TraceAttributeContext(Guid traceId, Guid methodId)
+        public TraceAttributeContext(string traceId, string methodId)
         {
             TraceId = traceId;
             MethodId = methodId;

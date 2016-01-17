@@ -1,4 +1,6 @@
-﻿using PostSharp.Aspects;
+﻿using Nancy;
+using PostSharp.Aspects;
+using PostSharp.Aspects.Advices;
 using PostSharp.Extensibility;
 using System;
 using System.Linq;
@@ -13,7 +15,9 @@ namespace Tracer.PostSharp
     [MulticastAttributeUsage(MulticastTargets.Method)] // ignore constructors
     public class TraceAttribute : OnMethodBoundaryAspect
     {
-        private static readonly ThreadLocal<Guid> _traceId = new ThreadLocal<Guid>(() => Guid.NewGuid());
+        private const string TraceIdHeaderKey = "TraceId";
+
+        private static readonly ThreadLocal<string> _traceId = new ThreadLocal<string>(() => Guid.NewGuid().ToString());
 
         private string _methodName;
 
@@ -26,13 +30,13 @@ namespace Tracer.PostSharp
 
         public override void OnEntry(MethodExecutionArgs args)
         {
-            var traceId = _traceId.Value;
-            var methodId = Guid.NewGuid();
+            var traceId = GetTraceId(args.Instance);
+            var methodId = Guid.NewGuid().ToString();
 
             var message = new TraceMessage
             {
-                TraceId = traceId.ToString(),
-                MethodId = methodId.ToString(),
+                TraceId = traceId,
+                MethodId = methodId,
                 TraceEvent = TraceEvent.OnMethodEntry,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
@@ -51,8 +55,8 @@ namespace Tracer.PostSharp
 
             var message = new TraceMessage
             {
-                TraceId = context.TraceId.ToString(),
-                MethodId = context.MethodId.ToString(),
+                TraceId = context.TraceId,
+                MethodId = context.MethodId,
                 TraceEvent = TraceEvent.OnMethodSuccess,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
@@ -70,8 +74,8 @@ namespace Tracer.PostSharp
             
             var message = new TraceMessage
             {
-                TraceId = context.TraceId.ToString(),
-                MethodId = context.MethodId.ToString(),
+                TraceId = context.TraceId,
+                MethodId = context.MethodId,
                 TraceEvent = TraceEvent.OnMethodException,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
@@ -80,6 +84,24 @@ namespace Tracer.PostSharp
             };
 
             message.Broadcast();
+        }
+
+        private string GetTraceId(object instance)
+        {
+            var nancyModule = instance as NancyModule;
+            if (nancyModule != null)
+            {
+                var traceIdHeader = nancyModule.Request.Headers[TraceIdHeaderKey];
+                if (traceIdHeader != null)
+                {
+                    var traceId = string.Join(";", nancyModule.Request.Headers[TraceIdHeaderKey]);
+                    if (!string.IsNullOrWhiteSpace(traceId))
+                    {
+                        _traceId.Value = traceId;
+                    }
+                }
+            }
+            return _traceId.Value;
         }
     }
 }
