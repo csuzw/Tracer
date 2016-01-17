@@ -34,6 +34,7 @@ namespace Tracer.PostSharp
                 TraceId = traceId.ToString(),
                 MethodId = methodId.ToString(),
                 TraceEvent = TraceEvent.OnMethodEntry,
+                Timestamp = DateTime.Now,
                 MethodName = _methodName,
                 Arguments = args.Arguments.Select(a => a.ToString()).ToList()
             };
@@ -53,6 +54,7 @@ namespace Tracer.PostSharp
                 TraceId = context.TraceId.ToString(),
                 MethodId = context.MethodId.ToString(),
                 TraceEvent = TraceEvent.OnMethodSuccess,
+                Timestamp = DateTime.Now,
                 MethodName = _methodName,
                 ReturnValue = args.ReturnValue.ToString(),
                 TimeTakenInMilliseconds = context.Stopwatch.ElapsedMilliseconds
@@ -71,6 +73,7 @@ namespace Tracer.PostSharp
                 TraceId = context.TraceId.ToString(),
                 MethodId = context.MethodId.ToString(),
                 TraceEvent = TraceEvent.OnMethodException,
+                Timestamp = DateTime.Now,
                 MethodName = _methodName,
                 Exception = args.Exception.ToString(),
                 TimeTakenInMilliseconds = context.Stopwatch.ElapsedMilliseconds
