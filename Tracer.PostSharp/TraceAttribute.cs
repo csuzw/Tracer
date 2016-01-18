@@ -1,12 +1,12 @@
 ﻿using Nancy;
 using PostSharp.Aspects;
-using PostSharp.Aspects.Advices;
 using PostSharp.Extensibility;
 using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Tracer.Common.Extensions;
+using Tracer.Common.Http;
 using Tracer.Common.Messages;
 
 namespace Tracer.PostSharp
@@ -44,6 +44,15 @@ namespace Tracer.PostSharp
             };
 
             message.Broadcast();
+
+            // ensure TraceId is passed across http boundaries
+            foreach (var argument in args.Arguments.Where(a => a.GetType() == typeof(IHttpRequest)))
+            {
+                var httpRequest = argument as IHttpRequest;
+                if (httpRequest == null || httpRequest.Headers.ContainsKey(TraceIdHeaderKey)) return;
+
+                httpRequest.Headers.Add(TraceIdHeaderKey, traceId);
+            }
 
             args.MethodExecutionTag = new TraceAttributeContext(traceId, methodId);
         }
