@@ -17,6 +17,7 @@ namespace Tracer.PostSharp
     public class TraceAttribute : OnMethodBoundaryAspect
     {
         private const string TraceIdHeaderKey = "TraceId";
+        private const string ParentMethodHeaderKey = "ParentMethodId";
 
         private static readonly ThreadLocal<string> _traceId = new ThreadLocal<string>(() => Guid.NewGuid().ToString());
         private static readonly ThreadLocal<Stack<string>> _methodIds = new ThreadLocal<Stack<string>>(() => new Stack<string>());
@@ -34,7 +35,7 @@ namespace Tracer.PostSharp
         {
             var traceId = GetTraceId(args.Instance);
             var methodId = Guid.NewGuid().ToString();
-            var parentMethodId = PeekAndPushParentMethodId(methodId);
+            var parentMethodId = PeekAndPushParentMethodId(methodId, args.Instance);
 
             var message = new TraceMessage
             {
@@ -49,13 +50,14 @@ namespace Tracer.PostSharp
 
             message.Broadcast();
 
-            // ensure TraceId is passed across http boundaries
+            // ensure TraceId and ParentMethodId are passed across http boundaries
             foreach (var argument in args.Arguments.Where(a => a.GetType() == typeof(IHttpRequest)))
             {
                 var httpRequest = argument as IHttpRequest;
-                if (httpRequest == null || httpRequest.Headers.ContainsKey(TraceIdHeaderKey)) return;
+                if (httpRequest == null) continue;
 
-                httpRequest.Headers.Add(TraceIdHeaderKey, traceId);
+                if (!httpRequest.Headers.ContainsKey(TraceIdHeaderKey)) httpRequest.Headers.Add(TraceIdHeaderKey, traceId);
+                if (!httpRequest.Headers.ContainsKey(ParentMethodHeaderKey)) httpRequest.Headers.Add(ParentMethodHeaderKey, methodId);
             }
 
             args.MethodExecutionTag = new TraceAttributeContext(traceId, methodId, parentMethodId);
@@ -105,9 +107,13 @@ namespace Tracer.PostSharp
             message.Broadcast();
         }
 
-        private string PeekAndPushParentMethodId(string methodId)
+        private string PeekAndPushParentMethodId(string methodId, object instance)
         {
             var stack = _methodIds.Value;
+
+            var headerValue = GetHeaderValue(instance, ParentMethodHeaderKey);
+            if (!string.IsNullOrWhiteSpace(headerValue)) stack.Push(headerValue);
+
             var parentMethodId = (stack.Count > 0) ? stack.Peek() : string.Empty;
             stack.Push(methodId);
             return parentMethodId;
@@ -121,20 +127,21 @@ namespace Tracer.PostSharp
 
         private string GetTraceId(object instance)
         {
-            var nancyModule = instance as NancyModule;
-            if (nancyModule != null)
+            var headerValue = GetHeaderValue(instance, TraceIdHeaderKey);
+            if (!string.IsNullOrWhiteSpace(headerValue))
             {
-                var traceIdHeader = nancyModule.Request.Headers[TraceIdHeaderKey];
-                if (traceIdHeader != null)
-                {
-                    var traceId = string.Join(";", nancyModule.Request.Headers[TraceIdHeaderKey]);
-                    if (!string.IsNullOrWhiteSpace(traceId))
-                    {
-                        _traceId.Value = traceId;
-                    }
-                }
+                _traceId.Value = headerValue;
             }
             return _traceId.Value;
+        }
+
+        private string GetHeaderValue(object instance, string headerKey)
+        {
+            var nancyModule = instance as NancyModule;
+            if (nancyModule == null) return string.Empty;
+
+            var header = nancyModule.Request.Headers[headerKey];
+            return (header != null) ? string.Join(";", nancyModule.Request.Headers[headerKey]) : string.Empty;
         }
     }
 }
