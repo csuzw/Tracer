@@ -9,6 +9,6 @@
         });
     });
     return conn.client.broadcastMessage = function (message) {
-        return $("#messages").append("<tr><td>" + message.TraceId + "</td><td>" + message.MethodId + "</td><td>" + message.TraceEvent + "</td><td>" + message.MethodName + "</td><td>" + message.Timestamp + "</td></tr>");
+        return $("#messages").append("<tr><td>" + message.TraceId + "</td><td>" + message.MethodId + "</td><td>" + message.ParentMethodId + "</td><td>" + message.TraceEvent + "</td><td>" + message.MethodName + "</td><td>" + message.Timestamp + "</td></tr>");
     }
 });

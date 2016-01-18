@@ -2,6 +2,7 @@
 using PostSharp.Aspects;
 using PostSharp.Extensibility;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -18,6 +19,7 @@ namespace Tracer.PostSharp
         private const string TraceIdHeaderKey = "TraceId";
 
         private static readonly ThreadLocal<string> _traceId = new ThreadLocal<string>(() => Guid.NewGuid().ToString());
+        private static readonly ThreadLocal<Stack<string>> _methodIds = new ThreadLocal<Stack<string>>(() => new Stack<string>());
 
         private string _methodName;
 
@@ -32,11 +34,13 @@ namespace Tracer.PostSharp
         {
             var traceId = GetTraceId(args.Instance);
             var methodId = Guid.NewGuid().ToString();
+            var parentMethodId = PeekAndPushParentMethodId(methodId);
 
             var message = new TraceMessage
             {
                 TraceId = traceId,
                 MethodId = methodId,
+                ParentMethodId = parentMethodId,
                 TraceEvent = TraceEvent.OnMethodEntry,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
@@ -54,7 +58,7 @@ namespace Tracer.PostSharp
                 httpRequest.Headers.Add(TraceIdHeaderKey, traceId);
             }
 
-            args.MethodExecutionTag = new TraceAttributeContext(traceId, methodId);
+            args.MethodExecutionTag = new TraceAttributeContext(traceId, methodId, parentMethodId);
         }
 
         public override void OnSuccess(MethodExecutionArgs args)
@@ -62,10 +66,13 @@ namespace Tracer.PostSharp
             var context = (TraceAttributeContext)args.MethodExecutionTag;
             context.Stopwatch.Stop();
 
+            PopParentMethodId();
+
             var message = new TraceMessage
             {
                 TraceId = context.TraceId,
                 MethodId = context.MethodId,
+                ParentMethodId = context.ParentMethodId,
                 TraceEvent = TraceEvent.OnMethodSuccess,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
@@ -80,11 +87,14 @@ namespace Tracer.PostSharp
         {
             var context = (TraceAttributeContext)args.MethodExecutionTag;
             context.Stopwatch.Stop();
-            
+
+            PopParentMethodId();
+
             var message = new TraceMessage
             {
                 TraceId = context.TraceId,
                 MethodId = context.MethodId,
+                ParentMethodId = context.ParentMethodId,
                 TraceEvent = TraceEvent.OnMethodException,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
@@ -93,6 +103,20 @@ namespace Tracer.PostSharp
             };
 
             message.Broadcast();
+        }
+
+        private string PeekAndPushParentMethodId(string methodId)
+        {
+            var stack = _methodIds.Value;
+            var parentMethodId = (stack.Count > 0) ? stack.Peek() : string.Empty;
+            stack.Push(methodId);
+            return parentMethodId;
+        }
+
+        private void PopParentMethodId()
+        {
+            var stack = _methodIds.Value;
+            stack.Pop();
         }
 
         private string GetTraceId(object instance)

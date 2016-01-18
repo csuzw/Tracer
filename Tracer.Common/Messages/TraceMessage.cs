@@ -7,6 +7,7 @@ namespace Tracer.Common.Messages
     {
         public string TraceId { get; set; }
         public string MethodId { get; set; }
+        public string ParentMethodId { get; set; }
         public TraceEvent TraceEvent { get; set; }
         public DateTime Timestamp { get; set; }
         public string MethodName { get; set; }
