@@ -18,7 +18,7 @@ namespace Tracer.Common.SignalR
 
         public void BroadcastTraceMessage(TraceMessage message)
         {
-            Broadcast("http://localhost:8080/", "traceHub", "Send", message).FireAndForget();
+            Broadcast(Constants.WebUri, "traceHub", "Send", message).FireAndForget();
         }
 
         private async Task Broadcast(string uri, string hubName, string action, params object[] args)

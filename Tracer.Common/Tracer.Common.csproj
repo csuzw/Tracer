@@ -49,8 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Extensions\TraceMessageExtensions.cs" />
+    <Compile Include="Http\HttpRequest.cs" />
     <Compile Include="Http\IHttpRequest.cs" />
     <Compile Include="Messages\TraceEvent.cs" />
     <Compile Include="Messages\TraceMessage.cs" />

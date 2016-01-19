@@ -14,6 +14,7 @@ namespace Tracer.Web
         {
             base.ApplicationStartup(container, pipelines);
             this.Conventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("Scripts"));
+            this.Conventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("Styles"));
         }
 
         protected override IRootPathProvider RootPathProvider
@@ -33,7 +34,7 @@ namespace Tracer.Web
 
             var assemblyPath = Path.GetDirectoryName(assembly.Location) ?? Environment.CurrentDirectory;
 
-            var rootPath = Path.GetFullPath(Path.Combine(assemblyPath, "..", ".."));
+            var rootPath = Path.GetFullPath(Path.Combine(assemblyPath, "..", "..", "..", "Tracer.Web"));
 
             return rootPath;
         }

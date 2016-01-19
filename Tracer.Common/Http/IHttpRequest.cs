@@ -5,5 +5,6 @@ namespace Tracer.Common.Http
     public interface IHttpRequest
     {
         Dictionary<string, string> Headers { get; }
+        string Uri { get; }
     }
 }

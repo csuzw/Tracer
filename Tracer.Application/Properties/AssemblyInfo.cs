@@ -38,4 +38,5 @@ using Tracer.PostSharp;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 // PostSharp
-[assembly: Trace(AttributeTargetTypes = "Tracer.Application.*")]
+[assembly: Trace(AttributeTargetTypes = "Tracer.Application.Logic.*")]
+[assembly: Trace(AttributeTargetTypes = "Tracer.Application.Modules.*")]
