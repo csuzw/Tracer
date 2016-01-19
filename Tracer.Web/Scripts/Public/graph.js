@@ -1,31 +1,32 @@
 ﻿var Graph = (function () {
 
-    var graph = this;
+    var _state = {
+        events: []
+    };
+    var _settings = {
+        nodeInfoClass: 'node-info'
+    };
 
     // private
-    var setupGraph = function (graphElementId) {
+    function setupGraph(graphElementId) {
 
-        console.log("Loading chart packages...");
+        Graph.Debug.write("Loading chart packages...");
 
         var graphElement = document.getElementById(graphElementId);
 
         if (graphElement == null) {
             throw "Graph element with id '" + graphElementId + "' not found";
         }
-
-        graph.context = {
-            events: [],
-            graphElement: graphElement
-        };
+        _state.graphElement = graphElement;
     
         google.charts.load('current', { packages: ["orgchart"] });
 
         startRenderCycle();
     };
-    
+ 
     function render () {
 
-        console.log("Rendering graph...");
+        Graph.Debug.write("Rendering graph...");
 
         var data = new google.visualization.DataTable();
         data.addColumn('string', 'Name');
@@ -33,8 +34,8 @@
         data.addColumn('string', 'ToolTip');
 
         // todo: iterate events and add row to data..
-        for (var i = 0; i < graph.context.events.length; i++) {
-            var event = graph.context.events[i];
+        for (var i = 0; i < _state.events.length; i++) {
+            var event = _state.events[i];
 
             // todo: split into separate methods..
             if (event.TraceEvent == "OnMethodSuccess") {
@@ -59,27 +60,27 @@
             ]);
         }
 
-        var chart = new google.visualization.OrgChart(graph.context.graphElement);
+        var chart = new google.visualization.OrgChart(_state.graphElement);
         google.visualization.events.addListener(chart, 'ready', onGraphReady);
 
         chart.draw(data, { allowHtml: true });
     };
 
     function onGraphReady() {
-        console.log("Rendering complete.");
+        Graph.Debug.write("Rendering complete.");
 
-        $('.node-info').on('click', function () {
+        $('.' + _settings.nodeInfoClass).on('click', function () {
             var info = $(this);
             var event = findEvent("MethodId", info.data('method-id'));
-            console.log(event);
+            Graph.Debug.write(event);
+            Graph.UI.EventInfo.render(event);
         });
     };
 
     function findEvent(key, valueToMatch) {
-        var events = graph.context.events;
-        for (var i = 0; i < events.length; i++) {
-            if (events[i][key] == valueToMatch) {
-                return events[i];
+        for (var i = 0; i < _state.events.length; i++) {
+            if (_state.events[i][key] == valueToMatch) {
+                return _state.events[i];
             }
         }
         return null;
@@ -98,25 +99,67 @@
         setup: function (graphElementId) {
             setupGraph(graphElementId);
         },
-        onEventReceived: function(event) {
-            console.log(graph.context.events);
+        getSettings: function() {
+            return _settings;
+        },
+        onEventReceived: function (event) {
+            Graph.Debug.write('New event received from stream.');
             // todo: check if event already exists
-            graph.context.events.push(event);
+            _state.events.push(event);
             // todo: sort events
+        },
+        getState: function() {
+            return _state;
+        },
+        startRendering: function() {
+            startRenderCycle();
+        },
+        stopRendering: function() {
+            
         }
     };
 
 })();
 
+Graph.EventStream = (function() {
+
+    var _traceHub = $.connection.traceHub.client;
+    _traceHub.broadcastMessage = Graph.onEventReceived;
+
+    var _hub = $.connection.hub;
+
+    // public
+    return {
+        connect: function() {
+            Graph.Debug.write("Connecting to event stream...");
+            _hub.start().done(function () {
+                Graph.Debug.write("Connected to event stream.");
+            });
+        },
+        disconnect: function() {
+            Graph.Debug.write("Disconnecting from event stream...");
+            _hub.disconnected(function () {
+                Graph.Debug.write("Disconnected from event stream.");
+            });
+            _hub.stop();
+        }
+    };
+})();
+
 Graph.Node = {};
 Graph.Node.create = function (event) {
+    var graph = Graph;
 
     var template = '<div>' +
-        '%(MethodName)s <br/>' +
-        "Time taken: %(TimeTakenInMilliseconds)sms <br/>" +
-        "<a href='#' class='node-info' data-method-id='%(MethodId)s'>More info</a></div>";
+        '%(Event.MethodName)s <br/>' +
+        "Time taken: %(Event.TimeTakenInMilliseconds)sms <br/>" +
+        "<a href='#' class='%(Settings.nodeInfoClass)s' data-method-id='%(Event.MethodId)s'>More info</a></div>";
 
-    var value = sprintf(template, event);
+    var value = sprintf(template, 
+        {
+            Event: event,
+            Settings: graph.getSettings()
+        });
 
     var nameColumn = {
         v: event.MethodId,
@@ -127,3 +170,17 @@ Graph.Node.create = function (event) {
 
     return [nameColumn, parentColumn, tooltipColumn];
 };
+
+Graph.Debug = (function() {
+
+    var _isEnabled = true;
+
+    //public 
+    return {
+        write: function (output) {
+            if (_isEnabled) {
+                console.log(output);
+            }
+        }
+    };
+})();

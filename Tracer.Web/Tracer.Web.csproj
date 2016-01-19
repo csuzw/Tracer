@@ -138,6 +138,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\Public\graphEventInfo.js" />
     <Content Include="Scripts\Public\tracer.js" />
     <Content Include="Scripts\Public\graph.js" />
     <Content Include="Styles\style.css" />
