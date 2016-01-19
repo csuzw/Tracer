@@ -1,21 +1,20 @@
-﻿using Nancy;
+﻿using System;
+using Nancy;
 using Tracer.Application.Logic;
 
 namespace Tracer.Application.Modules
 {
     public class ApplicationModule : NancyModule
     {
-        private readonly FooLogic _foo;
+        private readonly FooLogic _foo = new FooLogic();
 
         public ApplicationModule()
             : base("/application")
         {
-            _foo = new FooLogic();
-
-            Get["/{input:int}"] = parameters => WouldPreferNotToHaveToMakeThisMethod(parameters.input);
+            Get["/{input:int}"] = parameters => GetSomething(parameters.input);
         }
 
-        public string WouldPreferNotToHaveToMakeThisMethod(int input)
+        public string GetSomething(int input)
         {
             return _foo.Foo(input);
         }
