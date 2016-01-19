@@ -78,7 +78,7 @@ namespace Tracer.PostSharp
                 TraceEvent = TraceEvent.OnMethodSuccess,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
-                ReturnValue = args.ReturnValue.ToString(),
+                ReturnValue = (args.ReturnValue != null) ? args.ReturnValue.ToString() : string.Empty,
                 TimeTakenInMilliseconds = context.Stopwatch.ElapsedMilliseconds
             };
 
@@ -100,7 +100,7 @@ namespace Tracer.PostSharp
                 TraceEvent = TraceEvent.OnMethodException,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
-                Exception = args.Exception.ToString(),
+                Exception = (args.Exception != null) ? args.Exception.ToString() : string.Empty,
                 TimeTakenInMilliseconds = context.Stopwatch.ElapsedMilliseconds
             };
 
