@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Tracer.Application
+namespace Tracer.Application.Logic
 {
     public class BarLogic
     {

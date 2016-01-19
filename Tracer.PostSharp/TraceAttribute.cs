@@ -13,7 +13,7 @@ using Tracer.Common.Messages;
 namespace Tracer.PostSharp
 {
     [Serializable]
-    [MulticastAttributeUsage(MulticastTargets.Method)] // ignore constructors
+    [MulticastAttributeUsage(MulticastTargets.Method, TargetMemberAttributes = MulticastAttributes.Public)] // ignore constructors
     public class TraceAttribute : OnMethodBoundaryAspect
     {
         private const string TraceIdHeaderKey = "TraceId";
@@ -45,13 +45,13 @@ namespace Tracer.PostSharp
                 TraceEvent = TraceEvent.OnMethodEntry,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
-                Arguments = args.Arguments.Select(a => a.ToString()).ToList()
+                Arguments = args.Arguments.Select(a => (a != null) ? a.ToString() : string.Empty).ToList()
             };
 
             message.Broadcast();
 
             // ensure TraceId and ParentMethodId are passed across http boundaries
-            foreach (var argument in args.Arguments.Where(a => a.GetType() == typeof(IHttpRequest)))
+            foreach (var argument in args.Arguments.Where(a => a is IHttpRequest))
             {
                 var httpRequest = argument as IHttpRequest;
                 if (httpRequest == null) continue;
