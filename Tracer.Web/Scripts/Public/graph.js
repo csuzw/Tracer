@@ -1,30 +1,114 @@
-﻿var Graph = (function () {
+﻿
+var Graph = (function() {
 
-    var _state = {
-        events: []
-    };
-    var _settings = {
+    var settings = {
+        graphElement: null,
         nodeInfoClass: 'node-info'
     };
+    return {
+        setup: function(graphElementId) {
 
-    // private
-    function setupGraph(graphElementId) {
+            Graph.Debug.write("Loading chart packages...");
 
-        Graph.Debug.write("Loading chart packages...");
+            var graphElement = document.getElementById(graphElementId);
 
-        var graphElement = document.getElementById(graphElementId);
+            if (graphElement == null) {
+                throw "Graph element with id '" + graphElementId + "' not found";
+            }
 
-        if (graphElement == null) {
-            throw "Graph element with id '" + graphElementId + "' not found";
+            settings.graphElement = graphElement;
+
+            google.charts.load('current', { packages: ["orgchart"] });
+
+            Graph.EventStream.connect();
+            Graph.Renderer.start();
+        },
+        onGraphReady: function() {
+            Graph.Debug.write("Rendering complete.");
+
+            $('.' + settings.nodeInfoClass).on('click', function() {
+                var info = $(this);
+                var methodId = info.data('method-id');
+                var event = Graph.State.findEvent("MethodId", methodId);
+                Graph.Debug.write(event);
+                Graph.UI.EventInfo.render(event);
+            });
+        },
+        onEventReceived: function(event) {
+            Graph.Debug.write('New event received from stream.');
+            // todo: check if event already exists
+            Graph.State.addEvent(event);
+            // todo: sort events
+        },
+        getSettings: function() {
+            return settings;
         }
-        _state.graphElement = graphElement;
-    
-        google.charts.load('current', { packages: ["orgchart"] });
-
-        startRenderCycle();
     };
- 
-    function render () {
+})();
+
+Graph.State = (function() {
+
+    var events = [];
+
+    function getEvents() {
+        return events;
+    };
+
+    function addEvent(event) {
+        events.push(event);
+    };
+
+    function findEvent(key, valueToMatch) {
+        for (var i = 0; i < events.length; i++) {
+            if (events[i][key] == valueToMatch) {
+                return events[i];
+            }
+        }
+        return null;
+    };
+
+    return {
+        getEvents: getEvents,
+        addEvent: addEvent,
+        findEvent: findEvent
+    };
+
+})();
+
+Graph.Renderer = (function() {
+
+    var renderCycle;
+
+    function startRenderCycle() {
+        renderCycle = setInterval(function () {
+            render();
+        }, 3000);
+        Graph.Debug.write("Renderer started.");
+    };
+
+    function stopRenderCycle() {
+        clearInterval(renderCycle);
+        Graph.Debug.write("Renderer stopped.");
+    };
+
+    function handleMethodSuccessEvent(event) {
+        var parentEvent = Graph.State.findEvent("ParentMethodId", event.ParentMethodId);
+        parentEvent.TimeTakenInMilliseconds = event.TimeTakenInMilliseconds;
+        parentEvent.ReturnValue = event.ReturnValue;
+    };
+
+    function handleMethodExceptionEvent(event) {
+        var parentEvent = Graph.State.findEvent("ParentMethodId", event.ParentMethodId);
+        parentEvent.Exception = event.Exception;
+    };
+
+    function render() {
+
+        var events = Graph.State.getEvents();
+
+        if (events.length == 0) {
+            return;
+        }
 
         Graph.Debug.write("Rendering graph...");
 
@@ -33,138 +117,75 @@
         data.addColumn('string', 'Manager');
         data.addColumn('string', 'ToolTip');
 
-        // todo: iterate events and add row to data..
-        for (var i = 0; i < _state.events.length; i++) {
-            var event = _state.events[i];
+        for (var i = 0; i < events.length; i++) {
+            var event = events[i];
 
-            // todo: split into separate methods..
             if (event.TraceEvent == "OnMethodSuccess") {
-                var parentEvent = findEvent("ParentMethodId", event.ParentMethodId);
-
-                parentEvent.TimeTakenInMilliseconds = event.TimeTakenInMilliseconds;
-                parentEvent.ReturnValue = event.ReturnValue;
+                handleMethodSuccessEvent(event);
                 continue;
             }
 
-            // todo: split into separate methods..
             if (event.TraceEvent == "OnMethodException") {
-                var parentEvent = findEvent("ParentMethodId", event.ParentMethodId);
-                parentEvent.Exception = event.Exception;
+                handleMethodExceptionEvent(event);
                 continue;
             }
-
-            var node = Graph.Node.create(event);
 
             data.addRows([
-                node
+                Graph.Node.create(event)
             ]);
         }
 
-        var chart = new google.visualization.OrgChart(_state.graphElement);
-        google.visualization.events.addListener(chart, 'ready', onGraphReady);
-
+        var graphElement = Graph.getSettings().graphElement;
+        
+        var chart = new google.visualization.OrgChart(graphElement);
+        google.visualization.events.addListener(chart, 'ready', Graph.onGraphReady);
         chart.draw(data, { allowHtml: true });
     };
 
-    function onGraphReady() {
-        Graph.Debug.write("Rendering complete.");
-
-        $('.' + _settings.nodeInfoClass).on('click', function () {
-            var info = $(this);
-            var event = findEvent("MethodId", info.data('method-id'));
-            Graph.Debug.write(event);
-            Graph.UI.EventInfo.render(event);
-        });
-    };
-
-    function findEvent(key, valueToMatch) {
-        for (var i = 0; i < _state.events.length; i++) {
-            if (_state.events[i][key] == valueToMatch) {
-                return _state.events[i];
-            }
-        }
-        return null;
-    };
-
-    function startRenderCycle() {
-        
-        var renderLoop = setInterval(function () {
-            render();
-        }, 3000);
-        
-    };
-    
-    // public
     return {
-        setup: function (graphElementId) {
-            setupGraph(graphElementId);
-        },
-        getSettings: function() {
-            return _settings;
-        },
-        onEventReceived: function (event) {
-            Graph.Debug.write('New event received from stream.');
-            // todo: check if event already exists
-            _state.events.push(event);
-            // todo: sort events
-        },
-        getState: function() {
-            return _state;
-        },
-        startRendering: function() {
-            startRenderCycle();
-        },
-        stopRendering: function() {
-            
-        }
+        start: startRenderCycle,
+        stop: stopRenderCycle
     };
 
 })();
 
 Graph.EventStream = (function() {
 
-    var _traceHub = $.connection.traceHub.client;
-    _traceHub.broadcastMessage = Graph.onEventReceived;
+    var traceHub = $.connection.traceHub.client;
+    traceHub.broadcastMessage = Graph.onEventReceived;
 
-    var _hub = $.connection.hub;
+    var hub = $.connection.hub;
 
     // public
     return {
         connect: function() {
             Graph.Debug.write("Connecting to event stream...");
-            _hub.start().done(function () {
+            hub.start().done(function () {
                 Graph.Debug.write("Connected to event stream.");
             });
         },
         disconnect: function() {
             Graph.Debug.write("Disconnecting from event stream...");
-            _hub.disconnected(function () {
+            hub.disconnected(function () {
                 Graph.Debug.write("Disconnected from event stream.");
             });
-            _hub.stop();
+            hub.stop();
         }
     };
 })();
 
 Graph.Node = {};
 Graph.Node.create = function (event) {
-    var graph = Graph;
-
-    var template = '<div>' +
-        '%(Event.MethodName)s <br/>' +
-        "Time taken: %(Event.TimeTakenInMilliseconds)sms <br/>" +
-        "<a href='#' class='%(Settings.nodeInfoClass)s' data-method-id='%(Event.MethodId)s'>More info</a></div>";
-
-    var value = sprintf(template, 
-        {
-            Event: event,
-            Settings: graph.getSettings()
-        });
+    var template = "<div>" +
+        event.MethodName + "<br/>" +
+        "Time taken: " + event.TimeTakenInMilliseconds + "ms <br/>" +
+        "<a href='#' class='" + Graph.getSettings().nodeInfoClass + "' data-method-id='" + event.MethodId + "'>More info</a></div>";
 
     var nameColumn = {
         v: event.MethodId,
-        f: value
+        f: template
     };
+
     var parentColumn = event.ParentMethodId;
     var tooltipColumn = '';
 
@@ -173,12 +194,12 @@ Graph.Node.create = function (event) {
 
 Graph.Debug = (function() {
 
-    var _isEnabled = true;
+    var isEnabled = true;
 
     //public 
     return {
         write: function (output) {
-            if (_isEnabled) {
+            if (isEnabled) {
                 console.log(output);
             }
         }

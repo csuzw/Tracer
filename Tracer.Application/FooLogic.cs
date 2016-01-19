@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using Tracer.Application.Logic;
 
 namespace Tracer.Application
 {
