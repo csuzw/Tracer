@@ -34,7 +34,7 @@ namespace Tracer.Web
 
             var assemblyPath = Path.GetDirectoryName(assembly.Location) ?? Environment.CurrentDirectory;
 
-            var rootPath = Path.GetFullPath(Path.Combine(assemblyPath, "..", ".."));
+            var rootPath = Path.GetFullPath(Path.Combine(assemblyPath, "..", "..", "..", "Tracer.Web"));
 
             return rootPath;
         }
