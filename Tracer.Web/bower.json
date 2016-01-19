@@ -20,6 +20,7 @@
   "dependencies": {
     "jquery": "~2.2.0",
     "signalr": "~2.2.0",
-    "bootstrap": "~3.3.6"
+    "bootstrap": "~3.3.6",
+	"sprintfjs": "~1.2.1"
   }
 }

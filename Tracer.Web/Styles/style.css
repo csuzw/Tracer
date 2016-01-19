@@ -1,0 +1,22 @@
+﻿#graph {
+    border-width: 2px;
+    border-color: black;
+    border-style: solid;
+    min-height: 800px;
+}
+
+circle {
+  stroke-width: 1.5px;
+}
+
+line {
+  stroke: #999;
+  stroke-width: 1.5px;
+}
+
+.text {
+    fill: black;
+    color: black;
+    font: 8px sans-serif;
+    pointer-events: none;
+}
