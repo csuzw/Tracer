@@ -179,7 +179,7 @@ Graph.Node.create = function (event) {
     var template = "<div>" +
         event.MethodName + "<br/>" +
         "Time taken: " + event.TimeTakenInMilliseconds + "ms <br/>" +
-        "<a href='#' class='" + Graph.getSettings().nodeInfoClass + "' data-method-id='" + event.MethodId + "'>More info</a></div>";
+        "<a href='#' class='btn btn-primary " + Graph.getSettings().nodeInfoClass + "' data-method-id='" + event.MethodId + "'>Info</a></div>";
 
     var nameColumn = {
         v: event.MethodId,
