@@ -62,7 +62,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FooLogic.cs" />
     <Compile Include="Logic\BarLogic.cs" />
     <Compile Include="Logic\FooLogic.cs" />
     <Compile Include="Modules\ApplicationModule.cs" />

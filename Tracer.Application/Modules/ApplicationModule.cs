@@ -1,4 +1,5 @@
 ﻿using Nancy;
+using Tracer.Application.Logic;
 
 namespace Tracer.Application.Modules
 {
