@@ -1,23 +1,46 @@
-﻿using System;
-using System.Threading;
-
-namespace Tracer.Application.Logic
+﻿namespace Tracer.Application.Logic
 {
-    public class FooLogic
+    public sealed class FooLogic : BaseLogic
     {
-        private readonly BarLogic _bar = new BarLogic();
-        private readonly Random _random = new Random();
+        private readonly int _maxDepth;
+        private readonly int _maxWidth;
 
-        public string Foo(int input)
+        protected override int MaxDepth { get { return _maxDepth; } }
+        protected override int MaxWidth { get { return _maxWidth; } }
+
+        public FooLogic(int maxDepth, int maxWidth)
         {
-            Sleep(_random.Next(1, 3000));
-
-            return string.Format("The number {0} was received at approximately {1}!", input, _bar.Bar());
+            _maxDepth = maxDepth;
+            _maxWidth = maxWidth;
+            var bar = new BarLogic(this, maxDepth, maxWidth);
+            Register(Cat);
+            Register(Dog);
+            Register(Cow);
+            Register(Sheep);
+            Register(bar.Duck);
+            Register(bar.Horse);
+            Register(bar.Elephant);
+            Register(bar.Fox);
         }
 
-        public void Sleep(int interval)
+        public string Cat(int depth)
         {
-            Thread.Sleep(interval);
+            return DoRandom("Meow", depth);
+        }
+
+        public string Dog(int depth)
+        {
+            return DoRandom("Woof", depth);
+        }
+
+        public string Cow(int depth)
+        {
+            return DoRandom("Moo", depth);
+        }
+
+        public string Sheep(int depth)
+        {
+            return DoRandom("Baa", depth);
         }
     }
 }

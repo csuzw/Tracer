@@ -9,11 +9,11 @@ namespace Tracer.Web.Modules
     {
         private readonly HttpHelper _httpHelper = new HttpHelper();
 
-        private const string ApplicationUri = "{0}/application/{1}";
+        private const string ApplicationUri = "{0}/application/depth/{1}/width/{2}";
 
         public FooBarModule() : base("/foobar")
         {
-            Get["/{input:int}"] = parameters => _httpHelper.GetString(new HttpRequest(ApplicationUri, Constants.ApplicationUri, parameters.input));
+            Get["/depth/{depth:int}/width/{width:int}"] = parameters => _httpHelper.GetString(new HttpRequest(ApplicationUri, Constants.ApplicationUri, parameters.depth, parameters.width));
         }
     }
 }

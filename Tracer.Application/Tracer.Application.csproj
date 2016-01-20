@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Logic\BarLogic.cs" />
+    <Compile Include="Logic\BaseLogic.cs" />
     <Compile Include="Logic\FooLogic.cs" />
     <Compile Include="Modules\ApplicationModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

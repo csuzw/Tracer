@@ -5,17 +5,15 @@ namespace Tracer.Application.Modules
 {
     public class ApplicationModule : NancyModule
     {
-        private readonly FooLogic _foo = new FooLogic();
-
         public ApplicationModule()
             : base("/application")
         {
-            Get["/{input:int}"] = parameters => GetSomething(parameters.input);
+            Get["/depth/{depth:int}/width/{width:int}"] = parameters => GetSomething(parameters.depth, parameters.width);
         }
 
-        public string GetSomething(int input)
+        public string GetSomething(int depth, int width)
         {
-            return _foo.Foo(input);
+            return new FooLogic(depth, width).Dog(0);
         }
     }
 }
