@@ -9,6 +9,7 @@ using System.Threading;
 using Tracer.Common.Extensions;
 using Tracer.Common.Http;
 using Tracer.Common.Messages;
+using Tracer.PostSharp.Extensions;
 
 namespace Tracer.PostSharp
 {
@@ -45,7 +46,7 @@ namespace Tracer.PostSharp
                 TraceEvent = TraceEvent.OnMethodEntry,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
-                Arguments = args.Arguments.Select(a => (a != null) ? a.ToString() : string.Empty).ToList()
+                Arguments = args.GetMethodArguments()
             };
 
             message.Broadcast();

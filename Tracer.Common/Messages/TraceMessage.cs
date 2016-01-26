@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Tracer.Common.Messages
 {
@@ -11,7 +12,7 @@ namespace Tracer.Common.Messages
         public TraceEvent TraceEvent { get; set; }
         public DateTime Timestamp { get; set; }
         public string MethodName { get; set; }
-        public List<string> Arguments { get; set; }
+        public List<Argument> Arguments { get; set; }
         public string ReturnValue { get; set; }
         public string Exception { get; set; }
         public long TimeTakenInMilliseconds { get; set; }

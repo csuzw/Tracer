@@ -3,17 +3,21 @@ var Graph = (function() {
 
     var settings = {
         graphElement: null,
-        nodeInfoClass: 'node-info'
+        nodeInfoClass: 'node-info',
+        callbacks: {
+           onEventReceived: null 
+        }
     };
     return {
-        setup: function(graphElementId) {
+        setup: function(graphSettings) {
+            settings = $.extend(settings, graphSettings);
 
             Graph.Debug.write("Loading chart packages...");
 
-            var graphElement = document.getElementById(graphElementId);
+            var graphElement = document.getElementById(settings.graphElementId);
 
             if (graphElement == null) {
-                throw "Graph element with id '" + graphElementId + "' not found";
+                throw "Graph element with id '" + settings.graphElementId + "' not found";
             }
 
             settings.graphElement = graphElement;
@@ -21,17 +25,14 @@ var Graph = (function() {
             google.charts.load('current', { packages: ["orgchart"] });
 
             Graph.EventStream.connect();
-            Graph.Renderer.start();
         },
-        onGraphReady: function() {
-            Graph.Debug.write("Rendering complete.");
-
+        onGraphRendered: function() {
             $('.' + settings.nodeInfoClass).on('click', function() {
                 var info = $(this);
                 var methodId = info.data('method-id');
                 var event = Graph.State.findEvent("MethodId", methodId);
                 Graph.Debug.write(event);
-                Graph.UI.EventInfo.render(event);
+                settings.callbacks.onEventReceived(event);
             });
         },
         onEventReceived: function(event) {
@@ -42,6 +43,14 @@ var Graph = (function() {
         },
         getSettings: function() {
             return settings;
+        },
+        start: function () {
+            Graph.Renderer.start();
+            Graph.Debug.write("Graph started.");
+        },
+        stop: function () {
+            Graph.Renderer.stop();
+            Graph.Debug.write("Graph stopped.");
         }
     };
 })();
@@ -138,7 +147,7 @@ Graph.Renderer = (function() {
         var graphElement = Graph.getSettings().graphElement;
         
         var chart = new google.visualization.OrgChart(graphElement);
-        google.visualization.events.addListener(chart, 'ready', Graph.onGraphReady);
+        google.visualization.events.addListener(chart, 'ready', Graph.onGraphRendered);
         chart.draw(data, { allowHtml: true });
     };
 
@@ -179,8 +188,8 @@ Graph.Node.create = function (event) {
     var template = "<div>" +
         event.MethodName + "<br/>" +
         "Time taken: " + event.TimeTakenInMilliseconds + "ms <br/>" +
-        "<a href='#' class='btn btn-primary " + Graph.getSettings().nodeInfoClass + "' data-method-id='" + event.MethodId + "'>Info</a></div>";
-
+        "<paper-button raised class='" + Graph.getSettings().nodeInfoClass + "' data-method-id='" + event.MethodId + "'>Info</paper-button></div>";
+        
     var nameColumn = {
         v: event.MethodId,
         f: template
@@ -205,3 +214,18 @@ Graph.Debug = (function() {
         }
     };
 })();
+
+Graph.Utils = {};
+Graph.Utils.isJson = function (object) {
+    try {
+        var value = object;
+        var length = value.length - 1;
+        if (value[0] == "{" && value[length] == "}" || value[0] == "[" && value[length] == "]") {
+            return true;
+        }
+    }
+    catch (e) {
+        
+    }
+    return false;
+};

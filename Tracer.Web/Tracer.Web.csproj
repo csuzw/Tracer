@@ -114,6 +114,9 @@
     <None Include="App.config" />
     <None Include="bower.json" />
     <None Include="packages.config" />
+    <None Include="Styles\main.scss" />
+    <None Include="Styles\palette.scss" />
+    <None Include="Styles\vars.scss" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scripts\Vendor\" />
@@ -129,10 +132,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Components\event-graph\event-graph.html" />
+    <Content Include="Components\event-info\even-info.css" />
+    <Content Include="Components\event-info\event-info.html" />
+    <Content Include="Components\tracer-dashboard\tracer-dashboard.css" />
+    <Content Include="Components\tracer-dashboard\tracer-dashboard.html" />
+    <Content Include="gulpFile.js" />
     <Content Include="Scripts\Public\graphEventInfo.js" />
     <Content Include="Scripts\Public\tracer.js" />
     <Content Include="Scripts\Public\graph.js" />
-    <Content Include="Styles\style.css" />
+    <None Include="Styles\fonts.scss" />
     <Content Include="Views\graph.html" />
     <Content Include="Views\trace.html" />
   </ItemGroup>

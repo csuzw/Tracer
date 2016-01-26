@@ -1,0 +1,55 @@
+html {
+  font-family: roboto, sans-serif; }
+
+body {
+  background-color: #FFFFFF; }
+
+.center-image {
+  position: absolute;
+  min-height: 100px;
+  min-width: 100px;
+  top: 50%;
+  left: 50%;
+  margin-left: -50px;
+  margin-top: -50px;
+  background-size: 100%; }
+
+.center-text {
+  text-align: center;
+  vertical-align: middle;
+  line-height: 90px; }
+
+.text-right {
+  text-align: right; }
+
+paper-toolbar.paper-toolbar-0 {
+  background-color: #28A955; }
+
+/*
+Table styles
+*/
+th {
+  text-align: left; }
+
+event-info td {
+  padding: 2px; }
+
+event-info paper-item {
+  margin-top: 0px;
+  border-bottom: 1px solid;
+  border-color: #dbdbdb; }
+
+/*
+Graph style overrides
+*/
+.google-visualization-orgchart-node {
+  font-family: roboto, sans-serif !important;
+  border: none !important;
+  color: #727272 !important;
+  background: none !important;
+  background-color: #eee !important;
+  border-radius: 0px !important;
+  -webkit-box-shadow: none !important; }
+
+.google-visualization-orgchart-linenode {
+  border-color: #28A955 !important; }

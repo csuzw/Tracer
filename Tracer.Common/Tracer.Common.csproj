@@ -54,6 +54,7 @@
     <Compile Include="Extensions\TraceMessageExtensions.cs" />
     <Compile Include="Http\HttpRequest.cs" />
     <Compile Include="Http\IHttpRequest.cs" />
+    <Compile Include="Messages\Argument.cs" />
     <Compile Include="Messages\TraceEvent.cs" />
     <Compile Include="Messages\TraceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

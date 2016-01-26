@@ -2,46 +2,33 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Trace</title>
-
+    
     <!-- jQuery is required by signalr. -->
     <script src="../scripts/vendor/jquery/dist/jquery.min.js" type="text/javascript"></script>
     <script src="../scripts/vendor/signalr/jquery.signalr.min.js" type="text/javascript"></script>
-    <script src="../scripts/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
-
     <script src="../signalr/hubs" type="text/javascript"></script>
     <!-- required by graph.js for drawing the graph. -->
     <script src="https://www.gstatic.com/charts/loader.js"></script>
-
-    <!-- required by graph.js for formatting strings. -->
-    <script src="../scripts/vendor/sprintfjs/sprintf.js"></script>
-
+    <!-- required by polymer. -->
+    <script src="../scripts/vendor/webcomponentsjs/webcomponents-lite.min.js"></script>
+    <!-- required by the event info to format the event arguments. -->
+    <script src="../scripts/vendor/jquery-jsonview/dist/jquery.jsonview.js"></script>
+    <script src="../scripts/vendor/jquery.kinetic/jquery.kinetic.min.js"></script>
+    
+    <!-- graph components. -->
     <script src="../scripts/public/graph.js"></script>
     <script src="../scripts/public/graphEventInfo.js"></script>
 
-    <link href="../Scripts/Vendor/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
-    <link href="../Styles/style.css" rel="stylesheet" />
-
-
-    <script type="text/javascript">
-
-        $(function () {
-            Graph.setup("graph");
-        });
-
-    </script>
-
+    <!-- polymer component templates. -->
+    <link href="../Components/tracer-dashboard/tracer-dashboard.html" rel="import">
+    
+    <!-- styles. -->
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../scripts/vendor/jquery-jsonview/dist/jquery.jsonview.css">
 </head>
 <body>
-   
-        <div class="row">
-            <div class="col-md-3">
-                <div id="event-container" class="event">
-                </div>
-            </div>
-            <div class="col-md-9">
-                <div id="graph"></div>
-            </div>
-        </div>
+    
+    <tracer-dashboard></tracer-dashboard>
     
 </body>
 </html>

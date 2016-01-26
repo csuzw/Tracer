@@ -15,6 +15,7 @@ namespace Tracer.Web
             base.ApplicationStartup(container, pipelines);
             this.Conventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("Scripts"));
             this.Conventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("Styles"));
+            this.Conventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("Components"));
         }
 
         protected override IRootPathProvider RootPathProvider
