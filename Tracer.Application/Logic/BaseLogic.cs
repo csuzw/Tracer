@@ -24,10 +24,26 @@ namespace Tracer.Application.Logic
             if (depth != MaxDepth)
             {
                 var callCount = _random.Next(0, MaxWidth + 1);
-                called = string.Join(", ", Enumerable.Range(0, callCount).Select(_ => _randomMethods[_random.Next(0, _randomMethods.Count)](depth + 1)));
+                called = string.Join(", ", Enumerable.Range(0, callCount).Select(_ =>
+                {
+                    try
+                    {
+                        return _randomMethods[_random.Next(0, _randomMethods.Count)](depth + 1);
+                    }
+                    catch (Exception e)
+                    {
+                        return e.Message;
+                    }
+                }));
             }
             var randomInterval = _random.Next(0, 1000);
             Thread.Sleep(randomInterval);
+
+            var randomException = _random.Next(0, 100);
+            if (randomException > 90)
+            {
+                throw new Exception(string.Format("{0} failed!", text));
+            }
 
             return (!string.IsNullOrEmpty(called)) ? string.Format("{0} [{1}]", text, called) : text;
         }
