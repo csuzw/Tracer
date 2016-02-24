@@ -2,33 +2,196 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Trace</title>
-    
+
     <!-- jQuery is required by signalr. -->
     <script src="../scripts/vendor/jquery/dist/jquery.min.js" type="text/javascript"></script>
     <script src="../scripts/vendor/signalr/jquery.signalr.min.js" type="text/javascript"></script>
     <script src="../signalr/hubs" type="text/javascript"></script>
-    <!-- required by graph.js for drawing the graph. -->
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
-    <!-- required by polymer. -->
-    <script src="../scripts/vendor/webcomponentsjs/webcomponents-lite.min.js"></script>
     <!-- required by the event info to format the event arguments. -->
     <script src="../scripts/vendor/jquery-jsonview/dist/jquery.jsonview.js"></script>
-    <script src="../scripts/vendor/jquery.kinetic/jquery.kinetic.min.js"></script>
-    
-    <!-- graph components. -->
-    <script src="../scripts/public/graph.js"></script>
-    <script src="../scripts/public/graphEventInfo.js"></script>
+    <!-- required by bootstrap. -->
+    <script src="../scripts/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- required by datatables.net. -->
+    <script src="../scripts/vendor/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="../scripts/vendor/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+    <!-- required for file tree visualization of event. -->
+    <script src="../scripts/vendor/jstree/dist/jstree.js"></script>
 
-    <!-- polymer component templates. -->
-    <link href="../Components/tracer-dashboard/tracer-dashboard.html" rel="import">
-    
+    <!-- tracer components. -->
+    <script src="../scripts/public/ui.js"></script>
+    <script src="../scripts/public/graph.js"></script>
+
     <!-- styles. -->
-    <link rel="stylesheet" href="../styles/main.css">
+
+    <link rel="stylesheet" href="../styles/bootstrap.min.css">
+    <!-- required to visualise JSON data. -->
     <link rel="stylesheet" href="../scripts/vendor/jquery-jsonview/dist/jquery.jsonview.css">
+
+    <!-- required by datatables.net. -->
+    <link rel="stylesheet" href="../scripts/vendor/datatables.net-bs/css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" href="../scripts/vendor/datatables.net-responsive-bs/css/responsive.bootstrap.min.css">
+
+    <!-- required for file tree visualization of event. -->
+    <!--<link rel="stylesheet" href="../scripts/vendor/jstree/dist/themes/default/style.min.css">-->
+    <link rel="stylesheet" href="../scripts/vendor/jstree-bootstrap-theme/dist/themes/proton/style.min.css">
+
+    <!-- our custom styles. -->
+    <link rel="stylesheet" href="../styles/main.css">
 </head>
 <body>
-    
-    <tracer-dashboard></tracer-dashboard>
-    
+
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-lg-12">
+
+                <nav class="navbar navbar-default">
+                    <div class="container-fluid">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">Tracer</a>
+                        </div>
+
+                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                            <ul class="nav navbar-nav">
+                                <li><a id="toggle-tracing-state" href="#">Start Tracing</a></li>
+                                <li>
+                                    <a href="#">
+                                        Events In Queue <span id="state-event-queue-length" class="badge">0</span>
+                                    </a>
+                                </li>
+                                <li class="dropdown">
+                                    <a id="state-dropdown-toggle" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Events
+                                        <span id="state-dropdown-event-count-badge" class="badge"></span>
+                                        <span class="caret"></span>
+                                    </a>
+                                    <ul id="state-dropdown" class="dropdown-menu" role="menu">
+                                        <li>
+                                            <a id="state-dropdown-clear-state" href="#">Clear State</a>
+                                        </li>
+                                        <li id="state-dropdown-download-state-item">
+                                            <!-- Dynamically created download link goes here. -->
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        Errors <span id="state-event-errors-length" class="badge">0</span>
+                                    </a>
+                                </li>
+                            </ul>
+                            <form class="navbar-form navbar-right" role="search">
+                                <div class="form-group">
+                                    <input id="state-search-input" type="text" class="form-control" placeholder="Search">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </nav>
+
+            </div>
+        </div>
+        
+        <div class="row">
+            
+            <div class="col-lg-12">
+                <div id="event-table-container" class="panel">
+                    <div id="event-table-container-body">
+                        <!-- datatable generated table goes here. -->
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="row">
+            
+            <div class="col-lg-6 ">
+                <div id="event-info-container" class="panel border">
+
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#event-info-summary-tab" data-toggle="tab">Event Summary</a></li>
+                        <li><a href="#event-info-error-tab" data-toggle="tab">Errors</a></li>
+                        <li><a href="#event-info-arguments-tab" data-toggle="tab">Arguments</a></li>
+                        <li><a href="#event-info-return-value-tab" data-toggle="tab">Returned Value</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+
+                        <div class="tab-pane fade active in" id="event-info-summary-tab">
+                            <dl class="dl-horizontal">
+
+                                <dt>Method name:</dt>
+                                <dd id="event-info-summary-method-name"></dd>
+
+                                <dt>Parent method name:</dt>
+                                <dd id="event-info-summary-parent-method-name"></dd>
+
+                                <dt>Time taken:</dt>
+                                <dd>
+                                    <span id="event-info-summary-time-taken">0</span>ms
+                                </dd>
+
+                                <dt>Status:</dt>
+                                <dd id="event-info-summary-status"></dd>
+                            </dl>
+                        </div>
+
+                        <div class="tab-pane fade" id="event-info-error-tab">
+                            <dl class="dl-horizontal">
+
+                                <dt>Error message:</dt>
+                                <dd id="event-info-error-message"></dd>
+
+                                <dt>Stack trace:</dt>
+                                <dd id="event-info-error-stack-trace"></dd>
+                            </dl>
+                        </div>
+
+                        <div class="tab-pane fade" id="event-info-arguments-tab">
+                        
+                        </div>
+
+                        <div class="tab-pane fade" id="event-info-return-value-tab">
+                        
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-lg-6 ">
+                <div id="event-tree-container" class="pre-scrollable panel border">
+                    <div id="event-tree-container-header">
+                        <ul class="nav nav-tabs pull-right">
+                            <li>
+                                <a id="event-tree-expand" href="#" data-toggle="tab" class="glyphicon glyphicon-plus glyphicon-small"></a>
+                            </li>
+                            <li>
+                                <a id="event-tree-collapse" href="#" data-toggle="tab" class="active glyphicon glyphicon-minus glyphicon-small"></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="event-tree-container-body">
+                        <!-- jstree generated tree goes here. -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="loading-overlay">
+        <div class="loading-notification">
+            <h4>Please click "Start Tracing" to begin.</h4>
+        </div>
+    </div>
 </body>
 </html>

@@ -48,3 +48,4 @@ Graph.UI.EventInfo = (function () {
         }
     };
 })();
+
