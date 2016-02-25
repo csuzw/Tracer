@@ -859,6 +859,9 @@ Tracer.UI.EventInfo.ReturnedValueTab = (function () {
                 returnedValueTab.text(event.OnSuccessEvent.ReturnValue);
             }
         }
+        else {
+            returnedValueTab.text('No return value to display.');
+        }
     });
 
     Event.subscribe('state-cleared', function () {
