@@ -70,6 +70,10 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Tracer.Common\Tracer.Common.csproj">
+      <Project>{9354d082-eeaf-4272-83a8-43c2b2d9e9c3}</Project>
+      <Name>Tracer.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Tracer.PostSharp\Tracer.PostSharp.csproj">
       <Project>{fdbe6693-daef-4361-8a21-8345a82fca93}</Project>
       <Name>Tracer.PostSharp</Name>

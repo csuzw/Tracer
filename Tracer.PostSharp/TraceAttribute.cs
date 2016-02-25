@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Tracer.Common;
 using Tracer.Common.Extensions;
 using Tracer.Common.Http;
 using Tracer.Common.Messages;
@@ -19,10 +20,7 @@ namespace Tracer.PostSharp
     {
         private const string TraceIdHeaderKey = "TraceId";
         private const string ParentMethodHeaderKey = "ParentMethodId";
-
-        private static readonly ThreadLocal<string> _traceId = new ThreadLocal<string>(() => Guid.NewGuid().ToString());
-        private static readonly ThreadLocal<Stack<string>> _methodIds = new ThreadLocal<Stack<string>>(() => new Stack<string>());
-
+        
         private string _methodName;
 
         public override void RuntimeInitialize(MethodBase method)
@@ -110,7 +108,7 @@ namespace Tracer.PostSharp
 
         private string PeekAndPushParentMethodId(string methodId, object instance)
         {
-            var stack = _methodIds.Value;
+            var stack = ThreadLocalVariables.MethodIds;
 
             var headerValue = GetHeaderValue(instance, ParentMethodHeaderKey);
             if (!string.IsNullOrWhiteSpace(headerValue)) stack.Push(headerValue);
@@ -122,7 +120,7 @@ namespace Tracer.PostSharp
 
         private void PopParentMethodId()
         {
-            var stack = _methodIds.Value;
+            var stack = ThreadLocalVariables.MethodIds;
             stack.Pop();
         }
 
@@ -131,9 +129,9 @@ namespace Tracer.PostSharp
             var headerValue = GetHeaderValue(instance, TraceIdHeaderKey);
             if (!string.IsNullOrWhiteSpace(headerValue))
             {
-                _traceId.Value = headerValue;
+                ThreadLocalVariables.TraceId = headerValue;
             }
-            return _traceId.Value;
+            return ThreadLocalVariables.TraceId;
         }
 
         private string GetHeaderValue(object instance, string headerKey)

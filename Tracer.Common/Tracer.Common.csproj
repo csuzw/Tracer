@@ -50,15 +50,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Extensions\LogExtensions.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
-    <Compile Include="Extensions\TraceMessageExtensions.cs" />
+    <Compile Include="Extensions\MessageExtensions.cs" />
     <Compile Include="Http\HttpRequest.cs" />
     <Compile Include="Http\IHttpRequest.cs" />
     <Compile Include="Messages\Argument.cs" />
+    <Compile Include="Messages\LogMessage.cs" />
+    <Compile Include="Messages\LogType.cs" />
     <Compile Include="Messages\TraceEvent.cs" />
     <Compile Include="Messages\TraceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalR\SignalRClient.cs" />
+    <Compile Include="ThreadLocalVariables.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

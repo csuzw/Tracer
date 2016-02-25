@@ -102,6 +102,7 @@
   <ItemGroup>
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Helpers\HttpHelper.cs" />
+    <Compile Include="Hubs\LogHub.cs" />
     <Compile Include="Hubs\TraceHub.cs" />
     <Compile Include="Modules\FooBarModule.cs" />
     <Compile Include="Modules\GraphModule.cs" />
