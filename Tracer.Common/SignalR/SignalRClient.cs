@@ -16,19 +16,30 @@ namespace Tracer.Common.SignalR
         {
         }
 
-        public void BroadcastTraceMessage(TraceMessage message)
+        public void Broadcast(TraceMessage message)
         {
-            Broadcast(Constants.WebUri, "traceHub", "Send", message).FireAndForget();
+            Broadcast(message, "traceHub", "Send");
         }
 
-        public void BroadcastTraceBoundaryMessage(TraceHttpBoundaryMessage message)
+        public void Broadcast(TraceHttpBoundaryRequestMessage message)
         {
-            Broadcast(Constants.WebUri, "traceHub", "SendHttp", message).FireAndForget();
+            Broadcast(message, "traceHub", "SendHttpBoundaryRequest");
         }
 
-        public void BroadcastLogMessage(LogMessage message)
+        public void Broadcast(TraceHttpBoundaryResponseMessage message)
         {
-            Broadcast(Constants.WebUri, "logHub", "Send", message).FireAndForget();
+            Broadcast(message, "traceHub", "SendHttpBoundaryResponse");
+        }
+
+        public void Broadcast(LogMessage message)
+        {
+            Broadcast(message, "logHub", "Send");
+        }
+
+        public void Broadcast<T>(T message, string hubName, string methodName)
+            where T : BaseMessage
+        {
+            Broadcast(Constants.WebUri, hubName, methodName, message).FireAndForget();
         }
 
         private async Task Broadcast(string uri, string hubName, string action, params object[] args)

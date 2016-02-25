@@ -7,17 +7,22 @@ namespace Tracer.Common.Extensions
     {
         public static void Broadcast(this TraceMessage message)
         {
-            SignalRClient.Instance.BroadcastTraceMessage(message);
+            SignalRClient.Instance.Broadcast(message);
         }
 
-        public static void Broadcast(this TraceHttpBoundaryMessage message)
+        public static void Broadcast(this TraceHttpBoundaryRequestMessage message)
         {
-            SignalRClient.Instance.BroadcastTraceBoundaryMessage(message);
+            SignalRClient.Instance.Broadcast(message);
+        }
+
+        public static void Broadcast(this TraceHttpBoundaryResponseMessage message)
+        {
+            SignalRClient.Instance.Broadcast(message);
         }
 
         public static void Broadcast(this LogMessage message)
         {
-            SignalRClient.Instance.BroadcastLogMessage(message);
+            SignalRClient.Instance.Broadcast(message);
         }
     }
 }

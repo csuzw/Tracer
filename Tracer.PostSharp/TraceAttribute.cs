@@ -1,12 +1,10 @@
-﻿using System.Net.Http;
-using Nancy;
+﻿using Nancy;
 using PostSharp.Aspects;
 using PostSharp.Extensibility;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
-using System.Threading;
 using Tracer.Common;
 using Tracer.Common.Extensions;
 using Tracer.Common.Messages;
@@ -36,12 +34,7 @@ namespace Tracer.PostSharp
             var methodId = Guid.NewGuid().ToString();
             var parentMethodId = PeekAndPushParentMethodId(methodId, args.Instance);
 
-            // HTTP Response
-            // Http status code
-            // Content type?
-            // Timetaken?
-            // Response content
-            // Remote machine name
+            // TODO boundary response message
 
             var message = new TraceMessage
             {
@@ -65,12 +58,10 @@ namespace Tracer.PostSharp
                 if (!httpRequest.Headers.Contains(TraceIdHeaderKey)) httpRequest.Headers.Add(TraceIdHeaderKey, traceId);
                 if (!httpRequest.Headers.Contains(ParentMethodHeaderKey)) httpRequest.Headers.Add(ParentMethodHeaderKey, methodId);
 
-                var httpBoundaryMessage = new TraceHttpBoundaryMessage
+                var httpBoundaryMessage = new TraceHttpBoundaryRequestMessage
                 {
                     TraceId = traceId,
                     MethodId = methodId,
-                    ParentMethodId = parentMethodId,
-                    TraceEvent = TraceEvent.OnBoundaryRequest,
                     Uri = httpRequest.RequestUri.ToString(),
                     HttpMethod = httpRequest.Method.ToString(),
                     Headers = httpRequest.Headers.GetHeaders(),

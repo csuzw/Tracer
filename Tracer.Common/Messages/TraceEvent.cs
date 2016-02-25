@@ -6,7 +6,5 @@
         OnMethodEntry,
         OnMethodSuccess,
         OnMethodException,
-        OnBoundaryRequest,
-        OnBoundaryResponse
     }
 }

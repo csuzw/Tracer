@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNet.SignalR;
 using Tracer.Common.Messages;
 
 namespace Tracer.Web.Hubs
@@ -11,7 +10,12 @@ namespace Tracer.Web.Hubs
             Clients.All.broadcastMessage(message);
         }
 
-        public void SendHttp(TraceHttpBoundaryMessage message)
+        public void SendHttpBoundaryRequest(TraceHttpBoundaryRequestMessage message)
+        {
+            Clients.All.broadcastMessage(message);
+        }
+
+        public void SendHttpBoundaryResponse(TraceHttpBoundaryResponseMessage message)
         {
             Clients.All.broadcastMessage(message);
         }

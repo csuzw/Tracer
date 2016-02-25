@@ -13,7 +13,7 @@ namespace Tracer.Application.Modules
 
         public string GetSomething(int depth, int width)
         {
-            return new FooLogic(depth, width).Dog(0);
+            return new FooLogic(depth, width).Hullabaloo();
         }
     }
 }

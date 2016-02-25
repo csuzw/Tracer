@@ -52,7 +52,10 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Extensions\HttpRequestMessageExtensions.cs" />
-    <Compile Include="Messages\TraceHttpBoundaryMessage.cs" />
+    <Compile Include="Messages\BaseHttpBoundaryMessage.cs" />
+    <Compile Include="Messages\BaseMessage.cs" />
+    <Compile Include="Messages\TraceHttpBoundaryResponseMessage.cs" />
+    <Compile Include="Messages\TraceHttpBoundaryRequestMessage.cs" />
     <Compile Include="Extensions\LogExtensions.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Extensions\MessageExtensions.cs" />
