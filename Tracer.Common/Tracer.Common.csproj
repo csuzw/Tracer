@@ -42,6 +42,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -50,11 +51,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Extensions\HttpRequestMessageExtensions.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Extensions\TraceMessageExtensions.cs" />
-    <Compile Include="Http\HttpRequest.cs" />
-    <Compile Include="Http\IHttpRequest.cs" />
     <Compile Include="Messages\Argument.cs" />
+    <Compile Include="Messages\TraceHttpBoundaryMessage.cs" />
     <Compile Include="Messages\TraceEvent.cs" />
     <Compile Include="Messages\TraceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

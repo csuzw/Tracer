@@ -1,23 +1,10 @@
-﻿using System;
-using System.Net.Http;
-using Tracer.Common.Http;
+﻿using System.Net.Http;
 
 namespace Tracer.Web.Helpers
 {
     public class HttpHelper
     {
-        public string GetString(IHttpRequest request)
-        {
-            var response = Get(request);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return response.Content.ReadAsStringAsync().Result;
-            }
-            return string.Format("{0} ({1})", response.StatusCode, response.ReasonPhrase);
-        }
-
-        private HttpResponseMessage Get(IHttpRequest request)
+        public HttpResponseMessage Get(HttpRequestMessage request)
         {
             var client = new HttpClient();
 
@@ -26,7 +13,7 @@ namespace Tracer.Web.Helpers
                 client.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
 
-            var response = client.GetAsync(new Uri(request.Uri)).Result;
+            var response = client.GetAsync(request.RequestUri).Result;
 
             return response;
         }

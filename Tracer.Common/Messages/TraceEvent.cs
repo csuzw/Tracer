@@ -5,6 +5,8 @@
         Unknown,
         OnMethodEntry,
         OnMethodSuccess,
-        OnMethodException
+        OnMethodException,
+        OnBoundaryRequest,
+        OnBoundaryResponse
     }
 }

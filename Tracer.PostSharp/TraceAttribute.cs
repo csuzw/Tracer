@@ -1,4 +1,5 @@
-﻿using Nancy;
+﻿using System.Net.Http;
+using Nancy;
 using PostSharp.Aspects;
 using PostSharp.Extensibility;
 using System;
@@ -7,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Tracer.Common.Extensions;
-using Tracer.Common.Http;
 using Tracer.Common.Messages;
 using Tracer.PostSharp.Extensions;
 
@@ -38,6 +38,13 @@ namespace Tracer.PostSharp
             var methodId = Guid.NewGuid().ToString();
             var parentMethodId = PeekAndPushParentMethodId(methodId, args.Instance);
 
+            // HTTP Response
+            // Http status code
+            // Content type?
+            // Timetaken?
+            // Response content
+            // Remote machine name
+
             var message = new TraceMessage
             {
                 TraceId = traceId,
@@ -52,13 +59,28 @@ namespace Tracer.PostSharp
             message.Broadcast();
 
             // ensure TraceId and ParentMethodId are passed across http boundaries
-            foreach (var argument in args.Arguments.Where(a => a is IHttpRequest))
+            foreach (var argument in args.Arguments.Where(a => a is HttpRequestMessage))
             {
-                var httpRequest = argument as IHttpRequest;
+                var httpRequest = argument as HttpRequestMessage;
                 if (httpRequest == null) continue;
 
-                if (!httpRequest.Headers.ContainsKey(TraceIdHeaderKey)) httpRequest.Headers.Add(TraceIdHeaderKey, traceId);
-                if (!httpRequest.Headers.ContainsKey(ParentMethodHeaderKey)) httpRequest.Headers.Add(ParentMethodHeaderKey, methodId);
+                if (!httpRequest.Headers.Contains(TraceIdHeaderKey)) httpRequest.Headers.Add(TraceIdHeaderKey, traceId);
+                if (!httpRequest.Headers.Contains(ParentMethodHeaderKey)) httpRequest.Headers.Add(ParentMethodHeaderKey, methodId);
+
+                var httpBoundaryMessage = new TraceHttpBoundaryMessage
+                {
+                    TraceId = traceId,
+                    MethodId = methodId,
+                    ParentMethodId = parentMethodId,
+                    TraceEvent = TraceEvent.OnBoundaryRequest,
+                    Uri = httpRequest.RequestUri.ToString(),
+                    HttpMethod = httpRequest.Method.ToString(),
+                    Headers = httpRequest.Headers.GetHeaders(),
+                    Timestamp = DateTime.Now,
+                    MachineName = Environment.MachineName
+                };
+
+                httpBoundaryMessage.Broadcast();
             }
 
             args.MethodExecutionTag = new TraceAttributeContext(traceId, methodId, parentMethodId);

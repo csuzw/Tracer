@@ -9,5 +9,10 @@ namespace Tracer.Common.Extensions
         {
             SignalRClient.Instance.BroadcastTraceMessage(message);
         }
+
+        public static void Broadcast(this TraceHttpBoundaryMessage message)
+        {
+            SignalRClient.Instance.BroadcastTraceHttpBoundaryMessage(message);
+        }
     }
 }

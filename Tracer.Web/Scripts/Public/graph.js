@@ -3,6 +3,8 @@
 // TODO: Add more info to event summary.
 // TODO: Add download application state link.
 // TODO: Fix selected failed tree node style to match table.
+// TODO: Add import complete toast.
+// TODO: Ability to save / load state to/from local storage.
 
 var Tracer = Tracer || {};
 
@@ -161,6 +163,17 @@ Tracer.EventQueue = (function () {
 
     function processEvent(event, queueIndex, onRemoveCallback, onSaveCallback) {
 
+        var parentEvent;
+
+        if (event.TraceEvent == "OnBoundaryRequest") {
+
+            parentEvent = eventStore.search('MethodId', event.ParentMethodId);
+
+            parentEvent.OnBoundaryRequestEvent = event;
+
+            return;
+        }
+
         if (event.TraceEvent == "OnMethodEntry") {
 
             var formattedEvent = formatEvent(event);
@@ -173,7 +186,7 @@ Tracer.EventQueue = (function () {
 
             } else {
 
-                var parentEvent = eventStore.search('MethodId', event.ParentMethodId);
+                parentEvent = eventStore.search('MethodId', event.ParentMethodId);
 
                 if (parentEvent) {
                     parentEvent.Children.push(formattedEvent);
@@ -192,7 +205,6 @@ Tracer.EventQueue = (function () {
             var entryEvent = eventStore.search("MethodId", event.MethodId);
 
             if (entryEvent) {
-
 
                 if (event.TraceEvent == "OnMethodSuccess") {
                     entryEvent.IsSuccess = true;
@@ -241,6 +253,7 @@ Tracer.EventQueue = (function () {
             OnEntryEvent: event,
             OnSuccessEvent: null,
             OnExceptionEvent: null,
+            OnBoundaryRequestEvent: null,
             IsSuccess: false,
             Status: "Pending",
             Children: []
@@ -262,7 +275,7 @@ Tracer.EventQueue = (function () {
         getStats: function() {
             return "Total events received: " + receivedCount + ", processed: " + processedCount + ", orphans: " + orphanCount;
         }
-};
+    };
 
 })();
 

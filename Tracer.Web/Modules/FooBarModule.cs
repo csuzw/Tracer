@@ -1,6 +1,7 @@
-﻿using Nancy;
+﻿using System;
+using System.Net.Http;
+using Nancy;
 using Tracer.Common;
-using Tracer.Common.Http;
 using Tracer.Web.Helpers;
 
 namespace Tracer.Web.Modules
@@ -13,7 +14,14 @@ namespace Tracer.Web.Modules
 
         public FooBarModule() : base("/foobar")
         {
-            Get["/depth/{depth:int}/width/{width:int}"] = parameters => _httpHelper.GetString(new HttpRequest(ApplicationUri, Constants.ApplicationUri, parameters.depth, parameters.width));
+            Get["/depth/{depth:int}/width/{width:int}"] = parameters =>
+            {
+                var uri = string.Format(ApplicationUri, Constants.ApplicationUri, parameters.depth, parameters.width);
+
+                var request = new HttpRequestMessage(HttpMethod.Get, new Uri(uri));
+
+                return _httpHelper.Get(request);
+            };
         }
     }
 }

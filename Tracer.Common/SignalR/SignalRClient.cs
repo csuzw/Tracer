@@ -21,6 +21,11 @@ namespace Tracer.Common.SignalR
             Broadcast(Constants.WebUri, "traceHub", "Send", message).FireAndForget();
         }
 
+        public void BroadcastTraceHttpBoundaryMessage(TraceHttpBoundaryMessage message)
+        {
+            Broadcast(Constants.WebUri, "traceHub", "SendHttp", message).FireAndForget();
+        }
+
         private async Task Broadcast(string uri, string hubName, string action, params object[] args)
         {
             var connection = new HubConnection(uri);
