@@ -2,7 +2,7 @@ body {
     height: 768px;
 }
 
-#loading-overlay {
+.overlay, .no-event-info-overlay {
     position: fixed;
     width: 100%;
     height:100%;
@@ -12,10 +12,19 @@ body {
     background-color: #ffffff;
 }
 
-.loading-notification {
+.panel > .overlay, .no-event-info-overlay {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+}
+
+.overlay-message {
   display: flex;
   margin: 0 auto;
 }
+
 
 /* prevents the navbar from being blocked by the loading overlay. */
 .navbar {
@@ -29,6 +38,7 @@ body {
 }
 
 .panel {
+    position: relative;
     padding: 10px;
     min-height: 400px;
 }
@@ -65,4 +75,30 @@ body {
 
 #event-info-error-tab {
     overflow-wrap: break-word;
+}
+
+.text-area {
+    height: 300px;
+    min-width: 100%;
+    font-size: 13px !important;
+}
+
+.error {
+    color: red;
+}
+
+/* Overrides the current row style i.e. danger or warning with the selected row style. */
+.table > thead > tr > td.selected, .table > tbody > tr > td.selected, .table > tfoot > tr > td.selected, .table > thead > tr > th.selected, .table > tbody > tr > th.selected, .table > tfoot > tr > th.selected, .table > thead > tr.selected > td, .table > tbody > tr.selected > td, .table > tfoot > tr.selected > td, .table > thead > tr.selected > th, .table > tbody > tr.selected > th, .table > tfoot > tr.selected > th {
+    color: #ffffff;
+    background-color: #3392e3 !important;
+}
+
+/* Overrides the default jstree search styling with the our selected styling to match the event table. */
+.jstree-proton .jstree-search {
+    background: #3392e3;
+    color: #fff;
+    border-radius: 3px;
+    box-shadow: inset 0 0 1px #3392e3;
+    font-style: normal;
+    font-weight: normal;
 }

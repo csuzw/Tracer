@@ -4,43 +4,54 @@ UI.Config = {
 
 };
 
+/*
+    Pub/Sub implementation inspired by Addy Osmani's JS patterns.
+
+    @usage:
+        Event.subscribe('some-event-name', function (event, data) {
+            console.log(data); // out puts 'Wee!' to the console.
+        });
+
+        Event.publish('some-event-name', 'Wee!');
+*/
 var Event = {};
-(function (q) {
-    var topics = {}, subUid = -1;
-    q.subscribe = function (topic, func) {
+(function (event) {
+    var topics = {};
+    var subscriberId = -1;
+
+    event.subscribe = function (topic, action) {
         if (!topics[topic]) {
             topics[topic] = [];
         }
-        var token = (++subUid).toString();
+        var token = (++subscriberId).toString();
         topics[topic].push({
             token: token,
-            func: func
+            action: action
         });
         return token;
     };
 
-    q.publish = function (topic, args) {
+    event.publish = function (topic, args) {
         if (!topics[topic]) {
             return false;
         }
         setTimeout(function () {
-            var subscribers = topics[topic],
-                len = subscribers ? subscribers.length : 0;
+            var subscribers = topics[topic];
+            var subscriberCount = subscribers ? subscribers.length : 0;
 
-            while (len--) {
-                subscribers[len].func(topic, args);
+            while (subscriberCount--) {
+                subscribers[subscriberCount].action(topic, args);
             }
         }, 0);
         return true;
-
     };
 
-    q.unsubscribe = function (token) {
-        for (var m in topics) {
-            if (topics[m]) {
-                for (var i = 0, j = topics[m].length; i < j; i++) {
-                    if (topics[m][i].token === token) {
-                        topics[m].splice(i, 1);
+    event.unsubscribe = function (token) {
+        for (var topic in topics) {
+            if (topics[topic]) {
+                for (var i = 0, j = topics[topic].length; i < j; i++) {
+                    if (topics[topic][i].token === token) {
+                        topics[topic].splice(i, 1);
                         return token;
                     }
                 }
@@ -48,12 +59,13 @@ var Event = {};
         }
         return false;
     };
+
 }(Event));
 
 /*
-HTML Table Factory
+    HTML Table Factory
 
-@author jmckniff.
+    @author jmckniff.
 */
 UI.Table = (function () {
 
@@ -364,6 +376,10 @@ UI.Table = (function () {
 
 })();
 
+/*
+    UI.Hyperlink
+    Useful for creating download links.
+*/
 UI.Hyperlink = {};
 UI.Hyperlink.createJsonDownloadLink = function (text, data) {
 

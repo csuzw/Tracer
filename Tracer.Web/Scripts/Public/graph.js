@@ -1,13 +1,8 @@
-﻿// TODO: Fix event info panel default state.
-// TODO: disable navbar controls when tracing is not enabled.
-// TODO: visualise network hops.
+﻿// TODO: visualise network hops.
 // TODO: Bug multiple trace root events sometimes appear in the EventTree.
-// TODO: Remove the "Graph" namespace.
-// TODO: Add navbar Errors button click event to show errors.
 // TODO: Add more info to event summary.
-// TODO: Add timestamp column to table.
-// TODO: Add download application state link
-// TODO: Add import raw state feature.
+// TODO: Add download application state link.
+// TODO: Fix selected failed tree node style to match table.
 
 var Tracer = Tracer || {};
 
@@ -20,6 +15,12 @@ Tracer.Debug = (function () {
             if (isEnabled) {
                 console.log(output);
             }
+        },
+        enable: function () {
+            isEnabled = true;
+        },
+        disable: function () {
+            isEnabled = false;
         }
     };
 })();
@@ -110,22 +111,24 @@ Tracer.EventQueue = (function () {
     var eventQueue = [];
     var queueIntervalInMiliseconds = 1000;
     var queueProcessor = null;
-    var maxRetryCount = 3;
-
-    startQueue();
+    var maxRetryCount = 10;
+    var processedCount = 0;
+    var orphanCount = 0;
+    var receivedCount = 0;
 
     function startQueue() {
-        Tracer.Debug.write('[Tracer.EventQueue] Starting...');
+        Tracer.Debug.write('[Tracer.EventQueue]: Starting...');
 
         queueProcessor = setInterval(function () {
-            
+
             for (var i = 0; i < eventQueue.length; i++) {
 
                 var currentEvent = eventQueue[i];
-                
+
                 if (currentEvent.retryCount >= maxRetryCount) {
                     eventQueue.splice(i, 1);
                     i--;
+                    orphanCount++;
                     Event.publish('event-queue-length-updated', eventQueue.length);
                     continue;
                 }
@@ -134,6 +137,7 @@ Tracer.EventQueue = (function () {
                     function () {
                         eventQueue.splice(i, 1);
                         i--;
+                        processedCount++;
                         Event.publish('event-queue-length-updated', eventQueue.length);
                     },
                     function (event) {
@@ -144,15 +148,15 @@ Tracer.EventQueue = (function () {
             }
         }, queueIntervalInMiliseconds);
 
-        Tracer.Debug.write('[Tracer.EventQueue] Started.');
+        Tracer.Debug.write('[Tracer.EventQueue]: Started.');
     };
 
     function stopQueue() {
-        Tracer.Debug.write('[Tracer.EventQueue] Stopping...');
+        Tracer.Debug.write('[Tracer.EventQueue]: Stopping...');
 
         clearInterval(queueProcessor);
 
-        Tracer.Debug.write('[Tracer.EventQueue] Stopped.');
+        Tracer.Debug.write('[Tracer.EventQueue]: Stopped.');
     };
 
     function processEvent(event, queueIndex, onRemoveCallback, onSaveCallback) {
@@ -179,7 +183,7 @@ Tracer.EventQueue = (function () {
                     Event.publish('state-event-received', formattedEvent);
 
                 } else {
-                    Tracer.Debug.write('[Tracer.EventQueue] Parent event not found, parent method id: ' + event.ParentMethodId);
+                    Tracer.Debug.write('[Tracer.EventQueue]: Parent event not found, parent method id: ' + event.ParentMethodId);
                 }
             }
 
@@ -209,16 +213,20 @@ Tracer.EventQueue = (function () {
 
                 Event.publish('state-event-updated', entryEvent);
             } else {
-                Tracer.Debug.write('[Tracer.EventQueue] Entry event not found method id: ' + event.MethodId);
+                Tracer.Debug.write('[Tracer.EventQueue]: Entry event not found method id: ' + event.MethodId);
             }
         }
     };
 
     function addEventToQueue(event) {
+        eventStore.saveRawEvent(event);
+
         event.retryCount = 0;
 
         eventQueue.push(event);
-        
+
+        receivedCount++;
+
         Event.publish('event-queue-length-updated', eventQueue.length);
     };
 
@@ -228,6 +236,7 @@ Tracer.EventQueue = (function () {
             ParentMethodId: event.ParentMethodId,
             MethodId: event.MethodId,
             MethodName: event.MethodName,
+            Timestamp: new Date(event.Timestamp),
             TimeTakenInMilliseconds: event.TimeTakenInMilliseconds,
             OnEntryEvent: event,
             OnSuccessEvent: null,
@@ -238,17 +247,27 @@ Tracer.EventQueue = (function () {
         };
     };
 
+    Event.subscribe('tracing-start', function() {
+        startQueue();
+    });
+
+    Event.subscribe('tracing-stop', function () {
+        stopQueue();
+    });
+
     return {
         start: startQueue,
         stop: stopQueue,
-        queueEvent: addEventToQueue
-    };
+        queueEvent: addEventToQueue,
+        getStats: function() {
+            return "Total events received: " + receivedCount + ", processed: " + processedCount + ", orphans: " + orphanCount;
+        }
+};
 
 })();
 
 Tracer.EventStream = (function () {
 
-    var eventStore = Tracer.EventStore;
     var eventQueue = Tracer.EventQueue;
 
     var traceHub = $.connection.traceHub.client;
@@ -265,26 +284,33 @@ Tracer.EventStream = (function () {
         }
     });
 
+    Event.subscribe('tracing-start', function (e, data) {
+        connectToEventStream();
+    });
+
+    Event.subscribe('tracing-stop', function (e, data) {
+        disconnectFromEventStream();
+    });
+
     function onEventReceived(event) {
-        eventStore.saveRawEvent(event);
         eventQueue.queueEvent(event);
     };
 
     function connectToEventStream() {
-        Tracer.Debug.write("Connecting to event stream...");
+        Tracer.Debug.write("[Tracer.EventStream]: Connecting to event stream...");
         hub.start().done(function () {
             isStreaming = true;
             Event.publish('event-stream-started');
-            Tracer.Debug.write("Connected to event stream.");
+            Tracer.Debug.write("[Tracer.EventStream]: Connected to event stream.");
         });
     };
 
     function disconnectFromEventStream() {
-        Tracer.Debug.write("Disconnecting from event stream...");
+        Tracer.Debug.write("[Tracer.EventStream]: Disconnecting from event stream...");
         hub.disconnected(function () {
             isStreaming = false;
             Event.publish('event-stream-stopped');
-            Tracer.Debug.write("Disconnected from event stream.");
+            Tracer.Debug.write("[Tracer.EventStream]: Disconnected from event stream.");
         });
         hub.stop();
     };
@@ -311,12 +337,21 @@ Tracer.Utils.isJson = function (object) {
     return false;
 };
 
+Tracer.Utils.formatDate = function (date){
+    function addZero(n){
+        return n < 10 ? '0' + n : '' + n;
+    }
+
+    return addZero(addZero(date.getDate()) + "/" + date.getMonth() + 1) + "/" + date.getFullYear() + " " +
+           addZero(date.getHours()) + ":" + addZero(date.getMinutes()) + ":" + addZero(date.getMinutes()) + ":" + addZero(date.getMilliseconds());
+}
+
 var Tracer = Tracer || {};
 Tracer.UI = {};
 
 Tracer.UI.EventStreamNotification = (function () {
 
-    Event.subscribe('event-stream-started', function () {
+    Event.subscribe('tracing-start', function (e, data) {
         var overlay = $('#loading-overlay');
         overlay.hide();
     });
@@ -326,10 +361,9 @@ Tracer.UI.EventStreamNotification = (function () {
 Tracer.UI.EventTable = (function () {
 
     var idPrefix = 'event_table_row_id_';
-    var table = null;
-    var dataTable = null;
-    var lastSelectedEvent = null;
-
+    var table;
+    var dataTable;
+    var lastSelectedEvent;
 
     Event.subscribe('state-event-received', function (e, event) {
         dataTable.row.add(event).draw(false);
@@ -337,21 +371,29 @@ Tracer.UI.EventTable = (function () {
 
     Event.subscribe('state-event-updated', function (e, event) {
         var row = dataTable.row('#' + idPrefix + event.MethodId);
+
         var data = row.data();
         data.Status = event.Status;
+        data.IsSuccess = event.IsSuccess;
         data.TimeTakenInMilliseconds = event.TimeTakenInMilliseconds;
 
         row.data(data);
 
+        var node = row.node();
+        if (data.Status == "Failed") {
+            node.className = "danger";
+        } else {
+            node.className = "";
+        }
+
+        dataTable.order([1, "desc"]).draw();
     });
 
     Event.subscribe('state-cleared', function () {
-        dataTable
-            .clear()
-            .draw();
+        dataTable.clear().draw();
     });
 
-    Event.subscribe('event-stream-started', function () {
+    Event.subscribe('tracing-start', function () {
         var tableData = {
             columns: [
                 {
@@ -359,8 +401,12 @@ Tracer.UI.EventTable = (function () {
                     type: 'text'
                 },
                 {
-                    text: 'Time Taken',
-                    type: 'text'
+                    text: 'Time Taken (ms)',
+                    type: 'num'
+                },
+                {
+                    text: 'Time stamp',
+                    type: 'date'
                 },
                 {
                     text: 'Status',
@@ -380,6 +426,13 @@ Tracer.UI.EventTable = (function () {
             columns: [
                 { data: 'MethodName' },
                 { data: 'TimeTakenInMilliseconds' },
+                {
+                    data: 'Timestamp',
+                    render: function (timeStamp) {
+                        var date = new Date(timeStamp);
+                        return Tracer.Utils.formatDate(date);
+                    }
+                },
                 { data: 'Status' }
             ],
             "order": [
@@ -419,11 +472,11 @@ Tracer.UI.EventTable = (function () {
         });
     });
 
-    Event.subscribe('state-search', function(e, query) {
+    Event.subscribe('state-search', function (e, query) {
         dataTable.search(query).draw();
     });
 
-    Event.subscribe('event-selected', function(e, event) {
+    Event.subscribe('event-selected', function (e, event) {
         $('#' + idPrefix + event.MethodId).addClass('selected');
         lastSelectedEvent = event;
     });
@@ -434,27 +487,39 @@ Tracer.UI.EventTable = (function () {
 
     function onRowAdded(row, data, index) {
         $(row).attr('id', idPrefix + data.MethodId);
+        $(row).addClass('warning');
     };
 
 })();
 
-// TODO: UI.ToggleTracing - Toggle should be notified if starting trace fails and a notification displayed.
 Tracer.UI.ToggleTracing = (function () {
+
+    var isTracing = false;
 
     $(function () {
 
         var toggleButton = $('#toggle-tracing-state');
 
         toggleButton.on('click', function () {
-            Event.publish('event-stream-toggle');
+            isTracing = !isTracing;
+
+            if (isTracing) {
+                Tracer.Debug.write('[Tracer.UI.ToggleTracing]: Starting trace...');
+                Event.publish('tracing-start');
+            } else {
+                Tracer.Debug.write('[Tracer.UI.ToggleTracing]: Stopping trace...');
+                Event.publish('tracing-stop');
+            }
         });
 
-        Event.subscribe('event-stream-stopped', function () {
-            toggleButton.text('Start Tracing');
-        });
-
-        Event.subscribe('event-stream-started', function () {
+        Event.subscribe('tracing-start', function () {
             toggleButton.text('Stop Tracing');
+            Tracer.Debug.write('[Tracer.UI.ToggleTracing]: Trace started.');
+        });
+
+        Event.subscribe('tracing-stop', function () {
+            toggleButton.text('Start Tracing');
+            Tracer.Debug.write('[Tracer.UI.ToggleTracing]: Trace stopped.');
         });
 
     });
@@ -469,11 +534,11 @@ Tracer.UI.EvenStateDropDown = (function () {
     $(function () {
         var eventCountBadge = $('#state-dropdown-event-count-badge');
 
-        Event.subscribe('state-event-received', function(e, event) {
+        Event.subscribe('state-event-received', function (e, event) {
             eventCount++;
             eventCountBadge.text(eventCount);
         });
-        
+
         Event.subscribe('state-cleared', function () {
             eventCount = 0;
             eventCountBadge.text(eventCount);
@@ -483,11 +548,15 @@ Tracer.UI.EvenStateDropDown = (function () {
 
         var errorCountBadge = $('#state-event-errors-length');
 
-        Event.subscribe('state-event-updated', function(e, event) {
+        Event.subscribe('state-event-updated', function (e, event) {
             if (!event.IsSuccess) {
                 errorCount++;
                 errorCountBadge.text(errorCount);
             }
+        });
+
+        errorCountBadge.parent().on('click', function () {
+            Event.publish('state-search', 'Failed');
         });
 
         var clearState = $('#state-dropdown-clear-state');
@@ -507,15 +576,15 @@ Tracer.UI.EvenStateDropDown = (function () {
 
 })();
 
-Tracer.UI.EventQueueLength = (function() {
+Tracer.UI.EventQueueLength = (function () {
 
-    var queueLengthBadge = null;
+    var queueLengthBadge;
 
-    $(function() {
+    $(function () {
         queueLengthBadge = $('#state-event-queue-length');
     });
 
-    Event.subscribe('event-queue-length-updated', function(e, queueLength) {
+    Event.subscribe('event-queue-length-updated', function (e, queueLength) {
         queueLengthBadge.text(queueLength);
     });
 
@@ -526,9 +595,10 @@ Tracer.UI.EventTree = (function () {
     var eventStore = Tracer.EventStore;
 
     var idPrefix = "tree_node_id_";
-    var body = null;
-    var expand = null;
-    var collapse = null;
+    var body;
+    var expand;
+    var collapse;
+    var lastSelectedEvent = null;
 
     $(function () {
         body = $('#event-tree-container-body');
@@ -537,7 +607,7 @@ Tracer.UI.EventTree = (function () {
 
         createTree();
 
-        expand.on('click', function() {
+        expand.on('click', function () {
             body.jstree('open_all');
         });
 
@@ -561,9 +631,7 @@ Tracer.UI.EventTree = (function () {
             ]
         });
 
-        var lastSelectedEvent = null;
-
-        body.on("select_node.jstree", function(e, selected) {
+        body.on("select_node.jstree", function (e, selected) {
             var data = selected.node.data;
             if (data) {
                 var event = eventStore.search('MethodId', data.MethodId);
@@ -585,6 +653,10 @@ Tracer.UI.EventTree = (function () {
         });
     };
 
+    function openNode(nodeId) {
+        body.jstree('select_node', nodeId);
+    };
+
     function findNodeById(id) {
         return body.jstree(true).get_node('#' + idPrefix + id);
     };
@@ -597,7 +669,7 @@ Tracer.UI.EventTree = (function () {
             "id": idPrefix + event.MethodId,
             "text": event.MethodName,
             "data": {
-                MethodId: event.MethodId  
+                MethodId: event.MethodId
             },
             "icon": "glyphicon glyphicon glyphicon-time"
         };
@@ -618,7 +690,7 @@ Tracer.UI.EventTree = (function () {
             };
 
             jsTree.create_node('#', traceRootNode, "last", function (traceNode) {
-                jsTree.create_node(traceNode, node, "last"); 
+                jsTree.create_node(traceNode, node, "last");
             });
         }
     };
@@ -674,6 +746,9 @@ Tracer.UI.EventTree = (function () {
         // infinite series of event-selected / event-unselected events
         // between the EventTree and EventTable
         $('#' + idPrefix + event.MethodId + ' > .jstree-anchor').addClass('jstree-clicked');
+
+        openNode('#' + idPrefix + event.MethodId);
+
     });
 
     Event.subscribe('event-unselected', function (e, event) {
@@ -684,26 +759,31 @@ Tracer.UI.EventTree = (function () {
 
 Tracer.UI.EventInfo = {};
 
-Tracer.UI.EventInfo.SummaryTab = (function() {
+Tracer.UI.EventInfo.SummaryTab = (function () {
 
     var eventStore = Tracer.EventStore;
 
     var summaryTab;
+    var overlay;
     var methodName;
     var parentMethodName;
     var timeTaken;
     var status;
 
-    $(function() {
+    $(function () {
         summaryTab = $('#event-info-summary-tab');
+        overlay = $('.no-event-info-overlay');
         methodName = $('#event-info-summary-method-name');
         parentMethodName = $('#event-info-summary-parent-method-name');
         timeTaken = $('#event-info-summary-time-taken');
         status = $('#event-info-summary-status');
+
+        overlay.show();
     });
 
-    Event.subscribe('event-selected', function(e, event) {
-        
+    Event.subscribe('event-selected', function (e, event) {
+        overlay.fadeOut('fast');
+
         methodName.text(event.MethodName);
         timeTaken.text(event.TimeTakenInMilliseconds);
         status.text(event.IsSuccess == true ? "Success" : "Failed");
@@ -715,21 +795,31 @@ Tracer.UI.EventInfo.SummaryTab = (function() {
         }
     });
 
+    Event.subscribe('state-cleared', function () {
+
+    });
+
 })();
 
-Tracer.UI.EventInfo.ErrorsTab = (function() {
+Tracer.UI.EventInfo.ErrorsTab = (function () {
 
     var errorTab;
+    var errorMessage;
     var stackTrace;
 
-    $(function() {
+    $(function () {
         errorTab = $('#event-info-error-tab');
+        errorMessage = $('#event-info-error-message');
         stackTrace = $('#event-info-error-stack-trace');
     });
 
     Event.subscribe('event-selected', function (e, event) {
         if (event.OnExceptionEvent) {
+            errorMessage.text('No error message to display.');
             stackTrace.text(event.OnExceptionEvent.Exception);
+        } else {
+            errorMessage.text('No error message to display.');
+            stackTrace.text('No stack trace to display.');
         }
     });
 
@@ -745,6 +835,10 @@ Tracer.UI.EventInfo.ArgumentsTab = (function () {
 
     Event.subscribe('event-selected', function (e, event) {
         argumentsTab.JSONView(event.OnEntryEvent.Arguments);
+    });
+
+    Event.subscribe('state-cleared', function () {
+        argumentsTab.empty();
     });
 
 })();
@@ -767,14 +861,18 @@ Tracer.UI.EventInfo.ReturnedValueTab = (function () {
         }
     });
 
+    Event.subscribe('state-cleared', function () {
+        returnedValueTab.empty();
+    });
+
 })();
 
-Tracer.UI.StateSearch = (function() {
+Tracer.UI.StateSearch = (function () {
 
     var input;
     var timeout = false;
 
-    $(function() {
+    $(function () {
         input = $('#state-search-input');
 
         input.keyup(function () {
@@ -787,12 +885,106 @@ Tracer.UI.StateSearch = (function() {
 
                 var query = input.val();
 
-                Tracer.Debug.write('[StateSearch] query: ' + query);
+                Tracer.Debug.write('[Tracer.UI.StateSearch]: Query: ' + query);
 
                 Event.publish('state-search', query);
 
             }, 250);
         });
+
+        input.prop('disabled', true);
     });
+
+    Event.subscribe('tracing-start', function () {
+        input.prop('disabled', false);
+    });
+
+})();
+
+Tracer.UI.PanelOverlay = (function () {
+
+    var overlays;
+    
+    $(function () {
+        overlays = $('.panel > .overlay');
+    });
+
+    Event.subscribe('state-event-received', function () {
+        overlays.fadeOut('fast');
+    });
+
+    Event.subscribe('state-cleared', function () {
+        overlays.fadeIn();
+    });
+
+})();
+
+Tracer.UI.ImportState = (function () {
+
+    var eventQueue = Tracer.EventQueue;
+
+    var openModal;
+    var importModal;
+    var importValidationMessage;
+    var stateInput;
+    var submitImport;
+
+    $(function () {
+        openModal = $('#state-import-open');
+        importModal = $('#state-import-modal');
+        importValidationMessage = $('#state-import-validation-message');
+        stateInput = $('#state-import-value');
+        submitImport = $('#state-import-submit');
+
+        openModal.on('click', function() {
+            importModal.modal();
+        });
+
+        submitImport.on('click', function () {
+            var stateText = stateInput.val();
+
+            if (isStateTextValid(stateText)) {
+                importState(stateText);
+            }
+        });
+    });
+
+    function isStateTextValid(stateText) {
+        if (stateText.length == 0) {
+            importValidationMessage.text("Please enter some state in JSON format.");
+            return false;
+        } else if (Tracer.Utils.isJson(stateText) == false) {
+            importValidationMessage.text("The state to import must be valid JSON.");
+            return false;
+        }
+
+        return true;
+    };
+
+    function importState(stateText) {
+
+        var state = $.parseJSON(stateText);
+
+        if (!state) {
+            importValidationMessage.text("Unable to parse the state JSON.");
+            return;
+        }
+
+        Event.publish('clear-state');
+        
+        for (var i = 0; i < state.length; i++) {
+            var event = state[i];
+            eventQueue.queueEvent(event);
+        }
+
+        var importStats = eventQueue.getStats();
+
+        Tracer.Debug.write("[Tracer.UI.ImportState]: " + importStats);
+
+        importModal.modal('hide');
+        stateInput.val('');
+        importValidationMessage.text('');
+    };
+
 
 })();

@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Trace</title>
+    <title>Tracer</title>
 
     <!-- jQuery is required by signalr. -->
     <script src="../scripts/vendor/jquery/dist/jquery.min.js" type="text/javascript"></script>
@@ -32,7 +32,6 @@
     <link rel="stylesheet" href="../scripts/vendor/datatables.net-responsive-bs/css/responsive.bootstrap.min.css">
 
     <!-- required for file tree visualization of event. -->
-    <!--<link rel="stylesheet" href="../scripts/vendor/jstree/dist/themes/default/style.min.css">-->
     <link rel="stylesheet" href="../scripts/vendor/jstree-bootstrap-theme/dist/themes/proton/style.min.css">
 
     <!-- our custom styles. -->
@@ -62,8 +61,7 @@
                             <ul class="nav navbar-nav">
                                 <li><a id="toggle-tracing-state" href="#">Start Tracing</a></li>
                                 <li>
-                                    <a href="#">
-                                        Events In Queue <span id="state-event-queue-length" class="badge">0</span>
+                                    <a href="#">Events In Queue <span id="state-event-queue-length" class="badge">0</span>
                                     </a>
                                 </li>
                                 <li class="dropdown">
@@ -78,17 +76,19 @@
                                         <li id="state-dropdown-download-state-item">
                                             <!-- Dynamically created download link goes here. -->
                                         </li>
+                                        <li>
+                                            <a id="state-import-open" href="#">Import State</a>
+                                        </li>
                                     </ul>
                                 </li>
                                 <li>
-                                    <a href="#">
-                                        Errors <span id="state-event-errors-length" class="badge">0</span>
+                                    <a href="#">Errors <span id="state-event-errors-length" class="badge">0</span>
                                     </a>
                                 </li>
                             </ul>
                             <form class="navbar-form navbar-right" role="search">
                                 <div class="form-group">
-                                    <input id="state-search-input" type="text" class="form-control" placeholder="Search">
+                                    <input id="state-search-input" type="text" class="form-control" placeholder="Search all events">
                                 </div>
                             </form>
                         </div>
@@ -97,29 +97,37 @@
 
             </div>
         </div>
-        
+
         <div class="row">
-            
+
             <div class="col-lg-12">
                 <div id="event-table-container" class="panel">
                     <div id="event-table-container-body">
                         <!-- datatable generated table goes here. -->
                     </div>
+
+                    <div class="overlay">
+                        <div class="overlay-message">
+                            <h5>No events to display.</h5>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-            
+
         </div>
-        
+
         <div class="row">
-            
+
             <div class="col-lg-6 ">
-                <div id="event-info-container" class="panel border">
+                <div id="event-info-container" class="panel">
 
                     <ul class="nav nav-tabs">
-                        <li class="active"><a href="#event-info-summary-tab" data-toggle="tab">Event Summary</a></li>
+                        <li class="active"><a href="#event-info-summary-tab" data-toggle="tab">Summary</a></li>
                         <li><a href="#event-info-error-tab" data-toggle="tab">Errors</a></li>
                         <li><a href="#event-info-arguments-tab" data-toggle="tab">Arguments</a></li>
-                        <li><a href="#event-info-return-value-tab" data-toggle="tab">Returned Value</a></li>
+                        <li><a href="#event-info-return-value-tab" data-toggle="tab">Returned Values</a></li>
+                        <li><a href="#event-info-log-messages" data-toggle="tab">Log</a></li>
                     </ul>
 
                     <div class="tab-content">
@@ -132,6 +140,9 @@
 
                                 <dt>Parent method name:</dt>
                                 <dd id="event-info-summary-parent-method-name"></dd>
+                                
+                                <dt>Parent method name:</dt>
+                                <dd id="Dd1"></dd>
 
                                 <dt>Time taken:</dt>
                                 <dd>
@@ -155,20 +166,34 @@
                         </div>
 
                         <div class="tab-pane fade" id="event-info-arguments-tab">
-                        
                         </div>
 
                         <div class="tab-pane fade" id="event-info-return-value-tab">
-                        
                         </div>
 
+                        <div class="tab-pane fade" id="event-info-log-messages">
+                            Related log messages go here...
+                        </div>
+
+                    </div>
+
+                    <div class="no-event-info-overlay">
+                        <div class="overlay-message">
+                            <h5>Select an event to view a summary.</h5>
+                        </div>
+                    </div>
+
+                    <div class="overlay">
+                        <div class="overlay-message">
+                            <h5>No events to display.</h5>
+                        </div>
                     </div>
 
                 </div>
             </div>
 
             <div class="col-lg-6 ">
-                <div id="event-tree-container" class="pre-scrollable panel border">
+                <div id="event-tree-container" class="pre-scrollable panel">
                     <div id="event-tree-container-header">
                         <ul class="nav nav-tabs pull-right">
                             <li>
@@ -182,16 +207,43 @@
                     <div id="event-tree-container-body">
                         <!-- jstree generated tree goes here. -->
                     </div>
+
+                    <div class="overlay">
+                        <div class="overlay-message">
+                            <h5>No events to display.</h5>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
         </div>
     </div>
 
-    <div id="loading-overlay">
-        <div class="loading-notification">
+    <div id="loading-overlay" class="overlay">
+        <div class="overlay-message">
             <h4>Please click "Start Tracing" to begin.</h4>
         </div>
     </div>
+
+    <div id="state-import-modal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title">Import state</h4>
+                </div>
+                <div class="modal-body">
+                    <textarea id="state-import-value" class="text-area" placeholder="Insert trace events to import here..."></textarea>
+                    <span id="state-import-validation-message" class="error"></span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button id="state-import-submit" type="button" class="btn btn-primary">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
