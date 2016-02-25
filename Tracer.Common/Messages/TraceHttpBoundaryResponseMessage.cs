@@ -1,7 +1,9 @@
-﻿namespace Tracer.Common.Messages
+﻿using System.Net;
+
+namespace Tracer.Common.Messages
 {
     public class TraceHttpBoundaryResponseMessage : BaseHttpBoundaryMessage
     {
-        public string HttpStatusCode { get; set; }
+        public HttpStatusCode HttpStatusCode { get; set; }
     }
 }

@@ -34,8 +34,6 @@ namespace Tracer.PostSharp
             var methodId = Guid.NewGuid().ToString();
             var parentMethodId = PeekAndPushParentMethodId(methodId, args.Instance);
 
-            // TODO boundary response message
-
             var message = new TraceMessage
             {
                 TraceId = traceId,
@@ -58,18 +56,19 @@ namespace Tracer.PostSharp
                 if (!httpRequest.Headers.Contains(TraceIdHeaderKey)) httpRequest.Headers.Add(TraceIdHeaderKey, traceId);
                 if (!httpRequest.Headers.Contains(ParentMethodHeaderKey)) httpRequest.Headers.Add(ParentMethodHeaderKey, methodId);
 
-                var httpBoundaryMessage = new TraceHttpBoundaryRequestMessage
+                var httpBoundaryRequestMessage = new TraceHttpBoundaryRequestMessage
                 {
                     TraceId = traceId,
                     MethodId = methodId,
                     Uri = httpRequest.RequestUri.ToString(),
                     HttpMethod = httpRequest.Method.ToString(),
-                    Headers = httpRequest.Headers.GetHeaders(),
                     Timestamp = DateTime.Now,
-                    MachineName = Environment.MachineName
+                    MachineName = Environment.MachineName,
+                    Headers = httpRequest.Headers.GetHeaders(),
+                    Content = httpRequest.Content.ToString(),
                 };
 
-                httpBoundaryMessage.Broadcast();
+                httpBoundaryRequestMessage.Broadcast();
             }
 
             args.MethodExecutionTag = new TraceAttributeContext(traceId, methodId, parentMethodId);
@@ -81,6 +80,22 @@ namespace Tracer.PostSharp
             context.Stopwatch.Stop();
 
             PopParentMethodId();
+
+            var httpResponse = args.ReturnValue as HttpResponseMessage;
+            if (httpResponse != null)
+            {
+                var httpBoundaryResponseMessage = new TraceHttpBoundaryResponseMessage
+                {
+                    TraceId = context.TraceId,
+                    MethodId = context.MethodId,
+                    Timestamp = DateTime.Now,
+                    Headers = httpResponse.Headers.GetHeaders(),
+                    Content = httpResponse.Content.ToString(),
+                    HttpStatusCode = httpResponse.StatusCode,         
+                };
+
+                httpBoundaryResponseMessage.Broadcast();
+            }
 
             var message = new TraceMessage
             {

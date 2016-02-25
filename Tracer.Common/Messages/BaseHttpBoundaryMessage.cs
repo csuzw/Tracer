@@ -1,9 +1,10 @@
-﻿namespace Tracer.Common.Messages
+﻿using System.Collections.Generic;
+
+namespace Tracer.Common.Messages
 {
     public class BaseHttpBoundaryMessage : BaseMessage
     {
-        public string ContentType { get; set; }
         public string Content { get; set; }
-        public string MachineName { get; set; }
+        public Dictionary<string, string> Headers { get; set; }
     }
 }
