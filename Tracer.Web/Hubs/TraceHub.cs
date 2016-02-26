@@ -12,12 +12,12 @@ namespace Tracer.Web.Hubs
 
         public void SendHttpBoundaryRequest(TraceHttpBoundaryRequestMessage message)
         {
-            Clients.All.broadcastMessage(message);
+            Clients.All.broadcastHttpRequestMessage(message);
         }
 
         public void SendHttpBoundaryResponse(TraceHttpBoundaryResponseMessage message)
         {
-            Clients.All.broadcastMessage(message);
+            Clients.All.broadcastHttpResponseMessage(message);
         }
     }
 }

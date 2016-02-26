@@ -65,7 +65,7 @@ namespace Tracer.PostSharp
                     Timestamp = DateTime.Now,
                     MachineName = Environment.MachineName,
                     Headers = httpRequest.Headers.GetHeaders(),
-                    Content = httpRequest.Content.ToString(),
+                    Content = (httpRequest.Content != null) ? httpRequest.Content.ToString() : "",
                 };
 
                 httpBoundaryRequestMessage.Broadcast();

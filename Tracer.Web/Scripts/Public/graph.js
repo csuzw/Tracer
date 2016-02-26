@@ -113,7 +113,7 @@ Tracer.EventQueue = (function () {
     var eventQueue = [];
     var queueIntervalInMiliseconds = 1000;
     var queueProcessor = null;
-    var maxRetryCount = 10;
+    var maxRetryCount = 50;
     var processedCount = 0;
     var orphanCount = 0;
     var receivedCount = 0;
@@ -163,17 +163,6 @@ Tracer.EventQueue = (function () {
 
     function processEvent(event, queueIndex, onRemoveCallback, onSaveCallback) {
 
-        var parentEvent;
-
-        if (event.TraceEvent == "OnBoundaryRequest") {
-
-            parentEvent = eventStore.search('MethodId', event.ParentMethodId);
-
-            parentEvent.OnBoundaryRequestEvent = event;
-
-            return;
-        }
-
         if (event.TraceEvent == "OnMethodEntry") {
 
             var formattedEvent = formatEvent(event);
@@ -186,7 +175,7 @@ Tracer.EventQueue = (function () {
 
             } else {
 
-                parentEvent = eventStore.search('MethodId', event.ParentMethodId);
+                var parentEvent = eventStore.search('MethodId', event.ParentMethodId);
 
                 if (parentEvent) {
                     parentEvent.Children.push(formattedEvent);
@@ -210,20 +199,46 @@ Tracer.EventQueue = (function () {
                     entryEvent.IsSuccess = true;
                     entryEvent.Status = "Success";
                     entryEvent.OnSuccessEvent = event;
+                    entryEvent.TimeTakenInMilliseconds += event.TimeTakenInMilliseconds;
+
+                    onRemoveCallback();
+                    onSaveCallback(entryEvent);
+
+                    Event.publish('state-event-updated', entryEvent);
                 }
 
                 if (event.TraceEvent == "OnMethodException") {
                     entryEvent.IsSuccess = false;
                     entryEvent.Status = "Failed";
                     entryEvent.OnExceptionEvent = event;
+                    entryEvent.TimeTakenInMilliseconds += event.TimeTakenInMilliseconds;
+
+                    onRemoveCallback();
+                    onSaveCallback(entryEvent);
+
+                    Event.publish('state-event-updated', entryEvent);
                 }
 
-                entryEvent.TimeTakenInMilliseconds += event.TimeTakenInMilliseconds;
+                if (event.TraceEvent == "HttpRequest") {
+                    console.log("EWEWERWERWEREWRWE");
+                    entryEvent.HttpRequest = event;
+                    console.log(entryEvent);
+                   
+                    onRemoveCallback();
+                    onSaveCallback(entryEvent);
 
-                onRemoveCallback();
-                onSaveCallback(entryEvent);
+                    Event.publish('state-event-updated', entryEvent);
+                }
 
-                Event.publish('state-event-updated', entryEvent);
+                if (event.TraceEvent == "HttpResponse") {
+                    entryEvent.HttpResponse = event;
+                    
+                    onRemoveCallback();
+                    onSaveCallback(entryEvent);
+
+                    Event.publish('state-event-updated', entryEvent);
+                }
+
             } else {
                 Tracer.Debug.write('[Tracer.EventQueue]: Entry event not found method id: ' + event.MethodId);
             }
@@ -242,6 +257,18 @@ Tracer.EventQueue = (function () {
         Event.publish('event-queue-length-updated', eventQueue.length);
     };
 
+    function queueHttpEvent(httpEvent) {
+        if (httpEvent.HttpMethod) {
+            httpEvent.EventType = "HttpRequest";
+        } else if (httpEvent.HttpStatusCode) {
+            httpEvent.EventType = "HttpResponse";
+        } else {
+            httpEvent.EventType = "Unknown";
+        }
+
+        addEventToQueue(httpEvent);
+    };
+
     function formatEvent(event) {
         return {
             TraceId: event.TraceId,
@@ -253,7 +280,8 @@ Tracer.EventQueue = (function () {
             OnEntryEvent: event,
             OnSuccessEvent: null,
             OnExceptionEvent: null,
-            OnBoundaryRequestEvent: null,
+            HttpRequest: null,
+            HttpResponse: null,
             IsSuccess: false,
             Status: "Pending",
             Children: []
@@ -272,6 +300,7 @@ Tracer.EventQueue = (function () {
         start: startQueue,
         stop: stopQueue,
         queueEvent: addEventToQueue,
+        queueHttpEvent: queueHttpEvent,
         getStats: function() {
             return "Total events received: " + receivedCount + ", processed: " + processedCount + ", orphans: " + orphanCount;
         }
@@ -284,7 +313,10 @@ Tracer.EventStream = (function () {
     var eventQueue = Tracer.EventQueue;
 
     var traceHub = $.connection.traceHub.client;
+
+    // Handle events received from the SignalR hubs.
     traceHub.broadcastMessage = onEventReceived;
+    traceHub.broadcastHttpRequestMessage = onHttpEventReceived;
 
     var hub = $.connection.hub;
     var isStreaming = false;
@@ -307,6 +339,12 @@ Tracer.EventStream = (function () {
 
     function onEventReceived(event) {
         eventQueue.queueEvent(event);
+    };
+
+    function onHttpEventReceived(httpEvent) {
+        Tracer.Debug.write("[Tracer.EventStream]: HTTP event received");
+        Tracer.Debug.write(httpEvent);
+        eventQueue.queueHttpEvent(httpEvent);
     };
 
     function connectToEventStream() {
@@ -744,6 +782,12 @@ Tracer.UI.EventTree = (function () {
             } else {
                 icon.addClass('glyphicon-remove');
             }
+        }
+
+        if (event.EventType == "HttpRequest") {
+            console.log('WEEEE');
+
+            console.log(node);
         }
     });
 
