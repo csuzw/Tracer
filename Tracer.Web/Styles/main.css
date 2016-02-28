@@ -60,10 +60,6 @@ body {
     padding: 0 !important;
 }
 
-#event-info-container li {
-    padding: 10px !important;
-}
-
 #event-table-container {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
@@ -101,4 +97,52 @@ body {
     box-shadow: inset 0 0 1px #3392e3;
     font-style: normal;
     font-weight: normal;
+}
+
+.http-request {
+    display: block;
+}
+
+.info-header > a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.info-body {
+    padding-left: 15px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: #ddd;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+}
+
+.info-body .info-body {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom-style: none;
+}
+
+.info-body ul {
+    margin-bottom: 0;
+}
+
+.status-icon {
+    border-radius: 50%;
+	display: inline-block;
+    height: 10px;
+    width: 10px;
+    margin-left: 2px;
+}
+
+.success {
+    background-color: #4caf50;
+}
+
+.danger {
+    background-color: #e51c23
+}
+
+.warning {
+    background-color: #ff9800;
 }

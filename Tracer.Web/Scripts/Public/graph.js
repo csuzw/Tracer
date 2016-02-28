@@ -1,10 +1,14 @@
-﻿// TODO: visualise network hops.
-// TODO: Bug multiple trace root events sometimes appear in the EventTree.
-// TODO: Add more info to event summary.
-// TODO: Add download application state link.
-// TODO: Fix selected failed tree node style to match table.
+﻿// TODO: Bug multiple trace root events sometimes appear in the EventTree.
 // TODO: Add import complete toast.
 // TODO: Ability to save / load state to/from local storage.
+// TODO: Fix event tree issue all methods are failed until successful.
+// TODO: Consolidate tabs.
+// TODO: Fix event summary method status showing failed when should show pending.
+// TODO: Split HTTP info into request / response and show headers / content.
+// TODO: Display HTTP Response headers too.
+// TODO: Move args and returned value into the summary tab.
+// TODO: Add sample log items.
+// TODO: Add sample db tab.
 
 var Tracer = Tracer || {};
 
@@ -167,7 +171,7 @@ Tracer.EventQueue = (function () {
 
             var formattedEvent = formatEvent(event);
 
-            if (event.ParentMethodId.length == 0) {
+            if (!event.ParentMethodId) {
 
                 onRemoveCallback();
                 onSaveCallback(formattedEvent);
@@ -186,6 +190,10 @@ Tracer.EventQueue = (function () {
 
                 } else {
                     Tracer.Debug.write('[Tracer.EventQueue]: Parent event not found, parent method id: ' + event.ParentMethodId);
+                    if (formattedEvent.retryCount == maxRetryCount) {
+                        formattedEvent.retryCount = 0;
+                        formattedEvent.ParentMethodId = null;
+                    }
                 }
             }
 
@@ -220,9 +228,7 @@ Tracer.EventQueue = (function () {
                 }
 
                 if (event.TraceEvent == "HttpRequest") {
-                    console.log("EWEWERWERWEREWRWE");
                     entryEvent.HttpRequest = event;
-                    console.log(entryEvent);
                    
                     onRemoveCallback();
                     onSaveCallback(entryEvent);
@@ -231,7 +237,11 @@ Tracer.EventQueue = (function () {
                 }
 
                 if (event.TraceEvent == "HttpResponse") {
+
                     entryEvent.HttpResponse = event;
+
+                    console.log('HTTP RESPONSE:');
+                    console.log(entryEvent);
                     
                     onRemoveCallback();
                     onSaveCallback(entryEvent);
@@ -259,11 +269,11 @@ Tracer.EventQueue = (function () {
 
     function queueHttpEvent(httpEvent) {
         if (httpEvent.HttpMethod) {
-            httpEvent.EventType = "HttpRequest";
+            httpEvent.TraceEvent = "HttpRequest";
         } else if (httpEvent.HttpStatusCode) {
-            httpEvent.EventType = "HttpResponse";
+            httpEvent.TraceEvent = "HttpResponse";
         } else {
-            httpEvent.EventType = "Unknown";
+            httpEvent.TraceEvent = "Unknown";
         }
 
         addEventToQueue(httpEvent);
@@ -317,6 +327,7 @@ Tracer.EventStream = (function () {
     // Handle events received from the SignalR hubs.
     traceHub.broadcastMessage = onEventReceived;
     traceHub.broadcastHttpRequestMessage = onHttpEventReceived;
+    traceHub.broadcastHttpResponseMessage = onHttpEventReceived;
 
     var hub = $.connection.hub;
     var isStreaming = false;
@@ -402,8 +413,19 @@ Tracer.UI = {};
 
 Tracer.UI.EventStreamNotification = (function () {
 
+    var overlay;
+    var message;
+
+    $(function() {
+        overlay = $('#loading-overlay');
+        message = overlay.find('.overlay-message');
+
+        message.on('click', function() {
+            Event.publish('tracing-start');
+        });
+    });
+
     Event.subscribe('tracing-start', function (e, data) {
-        var overlay = $('#loading-overlay');
         overlay.hide();
     });
 
@@ -678,7 +700,8 @@ Tracer.UI.EventTree = (function () {
                 }
             },
             "plugins": [
-                "search"
+                "search",
+                "httpRequestLabel"
             ]
         });
 
@@ -702,9 +725,14 @@ Tracer.UI.EventTree = (function () {
                 Event.publish('event-unselected', lastSelectedEvent.MethodId);
             }
         });
+
+        body.on('changed.jstree', function(e, data) {
+            console.log('something change!');
+            console.log(data);
+        });
     };
 
-    function openNode(nodeId) {
+    function selectNode(nodeId) {
         body.jstree('select_node', nodeId);
     };
 
@@ -720,7 +748,9 @@ Tracer.UI.EventTree = (function () {
             "id": idPrefix + event.MethodId,
             "text": event.MethodName,
             "data": {
-                MethodId: event.MethodId
+                MethodId: event.MethodId,
+                HttpRequest: event.HttpRequest, 
+                HttpResponse: event.HttpResponse
             },
             "icon": "glyphicon glyphicon glyphicon-time"
         };
@@ -729,7 +759,7 @@ Tracer.UI.EventTree = (function () {
 
         if (parentNode) {
             jsTree.create_node(parentNode, node, "last", function () {
-
+                body.jstree("open_all");
             });
         } else {
 
@@ -761,33 +791,25 @@ Tracer.UI.EventTree = (function () {
     Event.subscribe('state-event-updated', function (e, event) {
 
         var node = findNodeById(event.MethodId);
-        var icon = $('#' + idPrefix + event.MethodId + ' a > .jstree-icon');
-
-        // This makes me q_q touching the icon twice
-        // but jstree is struggling with refreshing the node reliably.
         if (node) {
+
             if (event.IsSuccess) {
-                node.text += " (Success)";
+                node.text = event.MethodName + " (Success)";
                 node.icon = 'glyphicon glyphicon-ok';
             } else {
-                node.text += " (Failed)";
+                node.text = event.MethodName + " (Failed)";
                 node.icon = 'glyphicon glyphicon-remove';
             }
-        }
 
-        if (icon) {
-            icon.removeClass('glyphicon-time');
-            if (event.IsSuccess) {
-                icon.addClass('glyphicon-ok');
-            } else {
-                icon.addClass('glyphicon-remove');
+            if (event.HttpRequest) {
+                node.data.HttpRequest = event.HttpRequest;
             }
-        }
 
-        if (event.EventType == "HttpRequest") {
-            console.log('WEEEE');
+            if (event.HttpResponse) {
+                node.data.HttpResponse = event.HttpResponse;
+            }
 
-            console.log(node);
+            body.jstree(true).redraw_node('#' + idPrefix + event.MethodId);
         }
     });
 
@@ -804,7 +826,7 @@ Tracer.UI.EventTree = (function () {
         // between the EventTree and EventTable
         $('#' + idPrefix + event.MethodId + ' > .jstree-anchor').addClass('jstree-clicked');
 
-        openNode('#' + idPrefix + event.MethodId);
+        selectNode('#' + idPrefix + event.MethodId);
 
     });
 
@@ -816,45 +838,77 @@ Tracer.UI.EventTree = (function () {
 
 Tracer.UI.EventInfo = {};
 
+
+Tracer.UI.EventInfo.Collapsible = (function () {
+
+    $(function () {
+        $('.info-body').on('hidden.bs.collapse', toggleIcon);
+        $('.info-body').on('shown.bs.collapse', toggleIcon);
+    });
+
+    function toggleIcon(e) {
+        $(e.target)
+            .prev('.info-header')
+            .find('i')
+            .toggleClass('glyphicon-triangle-bottom glyphicon-triangle-right');
+        return false;
+    }
+
+})();
+
 Tracer.UI.EventInfo.SummaryTab = (function () {
 
     var eventStore = Tracer.EventStore;
 
-    var summaryTab;
+    var tab;
     var overlay;
     var methodName;
     var parentMethodName;
     var timeTaken;
     var status;
+    var statusIcon;
+    var selectedId;
 
     $(function () {
-        summaryTab = $('#event-info-summary-tab');
+        tab = $('#event-info-summary-tab');
         overlay = $('.no-event-info-overlay');
         methodName = $('#event-info-summary-method-name');
         parentMethodName = $('#event-info-summary-parent-method-name');
         timeTaken = $('#event-info-summary-time-taken');
         status = $('#event-info-summary-status');
-
+        statusIcon = tab.find('.status-icon:first');
         overlay.show();
     });
 
     Event.subscribe('event-selected', function (e, event) {
-        overlay.fadeOut('fast');
+        selectedId = event.MethodId;
+        display(event);
+    });
 
-        methodName.text(event.MethodName);
-        timeTaken.text(event.TimeTakenInMilliseconds);
-        status.text(event.IsSuccess == true ? "Success" : "Failed");
-
-        var parentEvent = eventStore.search('MethodId', event.ParentMethodId);
-
-        if (parentEvent) {
-            parentMethodName.text(parentEvent.MethodName);
+    Event.subscribe('state-event-updated', function (e, event) {
+        if (event.MethodId == selectedId) {
+            display(event);
         }
     });
 
     Event.subscribe('state-cleared', function () {
 
     });
+
+    function display(event) {
+        overlay.fadeOut('fast');
+
+        methodName.text(event.MethodName);
+        timeTaken.text(event.TimeTakenInMilliseconds);
+        status.text(event.IsSuccess == true ? "Success" : "Failed");
+        statusIcon.prop('class', event.IsSuccess ? "status-icon success" : "status-icon danger");
+
+        var parentEvent = eventStore.search('MethodId', event.ParentMethodId);
+
+        if (parentEvent) {
+            parentMethodName.text(parentEvent.MethodName);
+        }
+    }
 
 })();
 
@@ -924,6 +978,95 @@ Tracer.UI.EventInfo.ReturnedValueTab = (function () {
 
 })();
 
+Tracer.UI.EventInfo.Http = (function () {
+
+    var container;
+    var headers;
+    var url;
+    var method;
+    var statusCode;
+    var statusCodeIcon;
+    var selectedId;
+
+    $(function () {
+        container = $('#event-info-http');
+        headers = $('#event-info-http-headers-body');
+        url = $('#event-info-http-url');
+        method = $('#event-info-http-method');
+        statusCode = $('#event-info-http-status-code');
+        statusCodeIcon = container.find('.status-icon');
+    });
+
+    Event.subscribe('event-selected', function (e, event) {
+        console.log(event);
+        selectedId = event.MethodId;
+
+        display(event);
+    });
+
+    Event.subscribe('state-event-updated', function (e, event) {
+        if (event.MethodId == selectedId) {
+            display(event);
+        }
+    });
+
+    Event.subscribe('state-cleared', function () {
+        selectedId = null;
+        reset();
+    });
+
+    function display(event) {
+        if (event.HttpRequest) {
+            container.show();
+
+            url.text(event.HttpRequest.Uri);
+            method.text(event.HttpRequest.HttpMethod);
+
+            displayHttpStatusCode(event.HttpResponse);
+
+            if (event.HttpRequest.Headers) {
+                var list = $('<ul>');
+                for (var headerName in event.HttpRequest.Headers) {
+                    var li = $('<li>', {
+                        html: "<strong>" + headerName + ":</strong> " + event.HttpRequest.Headers[headerName]
+                    });
+                    list.append(li);
+                }
+                headers.html(list);
+            }
+
+
+        } else {
+            container.hide();
+            reset();
+        }
+    };
+
+    function displayHttpStatusCode(httpStatusResponse) {
+
+        if (!httpStatusResponse) {
+            statusCodeIcon.prop('class', 'status-icon warning');
+            statusCode.text("Pending");
+            return;
+        }
+
+        if (httpStatusResponse.HttpStatusCode == "OK") {
+            statusCodeIcon.prop('class', 'status-icon success');
+        }
+
+        statusCode.text(httpStatusResponse.HttpStatusCode);
+    };
+
+    function reset() {
+        url.text('');
+        method.text('');
+        statusCode.text('');
+        statusCodeIcon.prop('class', 'status-icon warning');
+        headers.empty();
+    };
+
+})();
+
 Tracer.UI.StateSearch = (function () {
 
     var input;
@@ -957,6 +1100,7 @@ Tracer.UI.StateSearch = (function () {
     });
 
 })();
+
 
 Tracer.UI.PanelOverlay = (function () {
 

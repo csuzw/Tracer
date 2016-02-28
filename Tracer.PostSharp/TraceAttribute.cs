@@ -28,7 +28,7 @@ namespace Tracer.PostSharp
             Console.WriteLine("{0} aspect applied to {1}", GetType().Name, _methodName);
         }
 
-        public override void OnEntry(MethodExecutionArgs args)
+        public override async void OnEntry(MethodExecutionArgs args)
         {
             var traceId = GetTraceId(args.Instance);
             var methodId = Guid.NewGuid().ToString();
@@ -65,7 +65,7 @@ namespace Tracer.PostSharp
                     Timestamp = DateTime.Now,
                     MachineName = Environment.MachineName,
                     Headers = httpRequest.Headers.GetHeaders(),
-                    Content = (httpRequest.Content != null) ? httpRequest.Content.ToString() : "",
+                    Content = (httpRequest.Content != null) ? await httpRequest.Content.ReadAsStringAsync() : "",
                 };
 
                 httpBoundaryRequestMessage.Broadcast();

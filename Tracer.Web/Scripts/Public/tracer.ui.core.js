@@ -5,64 +5,6 @@ UI.Config = {
 };
 
 /*
-    Pub/Sub implementation inspired by Addy Osmani's JS patterns.
-
-    @usage:
-        Event.subscribe('some-event-name', function (event, data) {
-            console.log(data); // out puts 'Wee!' to the console.
-        });
-
-        Event.publish('some-event-name', 'Wee!');
-*/
-var Event = {};
-(function (event) {
-    var topics = {};
-    var subscriberId = -1;
-
-    event.subscribe = function (topic, action) {
-        if (!topics[topic]) {
-            topics[topic] = [];
-        }
-        var token = (++subscriberId).toString();
-        topics[topic].push({
-            token: token,
-            action: action
-        });
-        return token;
-    };
-
-    event.publish = function (topic, args) {
-        if (!topics[topic]) {
-            return false;
-        }
-        setTimeout(function () {
-            var subscribers = topics[topic];
-            var subscriberCount = subscribers ? subscribers.length : 0;
-
-            while (subscriberCount--) {
-                subscribers[subscriberCount].action(topic, args);
-            }
-        }, 0);
-        return true;
-    };
-
-    event.unsubscribe = function (token) {
-        for (var topic in topics) {
-            if (topics[topic]) {
-                for (var i = 0, j = topics[topic].length; i < j; i++) {
-                    if (topics[topic][i].token === token) {
-                        topics[topic].splice(i, 1);
-                        return token;
-                    }
-                }
-            }
-        }
-        return false;
-    };
-
-}(Event));
-
-/*
     HTML Table Factory
 
     @author jmckniff.

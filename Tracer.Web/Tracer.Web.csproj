@@ -117,7 +117,9 @@
     <None Include="Fonts\glyphicons-halflings-regular.eot" />
     <None Include="Fonts\glyphicons-halflings-regular.ttf" />
     <None Include="Fonts\glyphicons-halflings-regular.woff" />
+    <None Include="Fonts\glyphicons-halflings-regular.woff2" />
     <None Include="packages.config" />
+    <Content Include="Scripts\Public\tracer.ui.eventInfo.js" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scripts\Vendor\" />
@@ -134,13 +136,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Fonts\glyphicons-halflings-regular.svg" />
-    <Content Include="Scripts\Public\graphEventInfo.js" />
-    <Content Include="Scripts\Public\tracer.js" />
+    <Content Include="Scripts\Public\jstree.httpRequestLabel.js" />
+    <Content Include="Scripts\Public\tracer.core.js" />
     <Content Include="Scripts\Public\graph.js" />
-    <Content Include="Scripts\Public\ui.js" />
+    <Content Include="Scripts\Public\tracer.ui.eventTable.js" />
+    <Content Include="Scripts\Public\tracer.ui.eventTree.js" />
+    <Content Include="Scripts\Public\tracer.ui.js" />
+    <Content Include="Scripts\Public\tracer.ui.core.js" />
+    <Content Include="Scripts\Public\tracer.ui.navbar.js" />
     <Content Include="Styles\bootstrap.min.css" />
     <Content Include="Styles\main.css" />
-    <Content Include="Views\graph.html" />
     <Content Include="Views\trace.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
