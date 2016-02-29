@@ -108,7 +108,7 @@ Tracer.UI.Navbar.EventStateDropdown.EventCounter = (function () {
         var errorCountBadge = $('#state-event-errors-length');
 
         Event.subscribe('state-event-updated', function (e, event) {
-            if (!event.IsSuccess) {
+            if (!event.IsSuccess && event.OnExceptionEvent) {
                 errorCount++;
                 errorCountBadge.text(errorCount);
             }

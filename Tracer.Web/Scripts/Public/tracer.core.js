@@ -5,6 +5,7 @@
 // TODO: Fix event summary method status showing failed when should show pending.
 // TODO: Split HTTP info into request / response and show headers / content.
 // TODO: Display HTTP Response headers too.
+// TODO: Fix issue with navbar showing errors when there aren't  any.
 
 /*
     Pub/Sub implementation inspired by Addy Osmani's JS patterns.
@@ -295,8 +296,18 @@ Tracer.EventQueue = (function () {
 
                     entryEvent.HttpResponse = event;
 
-                    console.log('HTTP RESPONSE:');
-                    console.log(entryEvent);
+                    onRemoveCallback();
+                    onSaveCallback(entryEvent);
+
+                    Event.publish('state-event-updated', entryEvent);
+                }
+
+                if (event.TraceEvent == "Log") {
+
+                    Tracer.Debug.write("[Tracer.EventQueue]: Log event recieved:");
+                    Tracer.Debug.write(event);
+
+                    entryEvent.LogEvents.push(event);
 
                     onRemoveCallback();
                     onSaveCallback(entryEvent);
@@ -322,6 +333,12 @@ Tracer.EventQueue = (function () {
         Event.publish('event-queue-length-updated', eventQueue.length);
     };
 
+    function queueLogEvent(logEvent) {
+        logEvent.TraceEvent = "Log";
+
+        addEventToQueue(logEvent);
+    };
+
     function queueHttpEvent(httpEvent) {
         if (httpEvent.HttpMethod) {
             httpEvent.TraceEvent = "HttpRequest";
@@ -342,11 +359,13 @@ Tracer.EventQueue = (function () {
             MethodName: event.MethodName,
             Timestamp: new Date(event.Timestamp),
             TimeTakenInMilliseconds: event.TimeTakenInMilliseconds,
+            MachineName: event.MachineName,
             OnEntryEvent: event,
             OnSuccessEvent: null,
             OnExceptionEvent: null,
             HttpRequest: null,
             HttpResponse: null,
+            LogEvents: [],
             IsSuccess: false,
             Status: "Pending",
             Children: []
@@ -366,6 +385,7 @@ Tracer.EventQueue = (function () {
         stop: stopQueue,
         queueEvent: addEventToQueue,
         queueHttpEvent: queueHttpEvent,
+        queueLogEvent: queueLogEvent,
         getStats: function () {
             return "Total events received: " + receivedCount + ", processed: " + processedCount + ", orphans: " + orphanCount;
         }
@@ -378,11 +398,13 @@ Tracer.EventStream = (function () {
     var eventQueue = Tracer.EventQueue;
 
     var traceHub = $.connection.traceHub.client;
+    var logHub = $.connection.logHub.client;
 
     // Handle events received from the SignalR hubs.
     traceHub.broadcastMessage = onEventReceived;
     traceHub.broadcastHttpRequestMessage = onHttpEventReceived;
     traceHub.broadcastHttpResponseMessage = onHttpEventReceived;
+    logHub.broadcastLogMessage = onLogEventReceived;
 
     var hub = $.connection.hub;
     var isStreaming = false;
@@ -404,7 +426,15 @@ Tracer.EventStream = (function () {
     });
 
     function onEventReceived(event) {
+        Tracer.Debug.write("[Tracer.EventStream]: Event received");
+        Tracer.Debug.write(event);
         eventQueue.queueEvent(event);
+    };
+
+    function onLogEventReceived(logEvent) {
+        Tracer.Debug.write("[Tracer.EventStream]: Log event received");
+        Tracer.Debug.write(logEvent);
+        eventQueue.queueLogEvent(logEvent);
     };
 
     function onHttpEventReceived(httpEvent) {

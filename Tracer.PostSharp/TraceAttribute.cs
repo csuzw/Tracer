@@ -42,7 +42,8 @@ namespace Tracer.PostSharp
                 TraceEvent = TraceEvent.OnMethodEntry,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
-                Arguments = args.GetMethodArguments()
+                Arguments = args.GetMethodArguments(),
+                MachineName = Environment.MachineName,
             };
 
             message.Broadcast();

@@ -12,5 +12,6 @@ namespace Tracer.Common.Messages
         public string ReturnValue { get; set; }
         public string Exception { get; set; }
         public long TimeTakenInMilliseconds { get; set; }
+        public string MachineName { get; set; }
     }
 }

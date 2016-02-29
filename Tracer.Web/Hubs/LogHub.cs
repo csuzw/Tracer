@@ -7,7 +7,7 @@ namespace Tracer.Web.Hubs
     {
         public void Send(LogMessage message)
         {
-            Clients.All.broadcastMessage(message);
+            Clients.All.broadcastLogMessage(message);
         }
     }
 }

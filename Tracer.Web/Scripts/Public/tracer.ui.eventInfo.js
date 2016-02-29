@@ -4,24 +4,39 @@ Tracer.UI.EventInfo = {};
 
 Tracer.UI.EventInfo.SummaryTab = (function() {
 
-	var tab;
+	var container;
     var overlay;
     var generalInfo;
 
     var children;
+    var allChildren;
     var toggles;
 
     var expandAll;
     var collapseAll;
 
     $(function() {
-    	tab = $('#event-info-summary-tab');
-    	children = tab.find('.info-body:not(:first)');
-        toggles = tab.find('[data-toggle]:not(:first) > i');
+    	container = $('#event-info-container');
+    	allChildren = container.find('.info-body');
+    	children = container.find('.info-body:not(:first)');
+    	toggles = container.find('[data-toggle]:not(:first) > i');
+    	expandAll = $('#event-info-children-expand');
+    	collapseAll = $('#event-info-children-collapse');
 
     	overlay = $('.no-event-info-overlay');
     	generalInfo = $('#event-info-general-body');
 
+        expandAll.on('click', function(e) {
+        	allChildren.collapse('show');
+        	e.preventDefault();
+        });
+
+        collapseAll.on('click', function (e) {
+        	allChildren.collapse('hide');
+            e.preventDefault();
+        });
+
+        allChildren.collapse('hide');
     	overlay.show();
     });
 
@@ -47,6 +62,7 @@ Tracer.UI.EventInfo.General = (function () {
 	var timeTaken;
 	var status;
 	var statusIcon;
+    var machineName;
 	var selectedId;
 
 	$(function () {
@@ -55,6 +71,7 @@ Tracer.UI.EventInfo.General = (function () {
 		parentMethodName = $('#event-info-summary-parent-method-name');
 		timeTaken = $('#event-info-summary-time-taken');
 		status = $('#event-info-summary-status');
+	    machineName = $('#event-info-summary-machine-name');
 		statusIcon = container.find('.status-icon');
 	});
 
@@ -74,6 +91,7 @@ Tracer.UI.EventInfo.General = (function () {
 		timeTaken.text(event.TimeTakenInMilliseconds);
 		status.text(event.IsSuccess == true ? "Success" : "Failed");
 		statusIcon.prop('class', event.IsSuccess ? "status-icon success" : "status-icon danger");
+	    machineName.text(event.MachineName);
 
 		var parentEvent = eventStore.search('MethodId', event.ParentMethodId);
 
@@ -204,9 +222,56 @@ Tracer.UI.EventInfo.ReturnedValue = (function () {
 
 })();
 
+Tracer.UI.EventInfo.Logs = (function () {
+
+	var container;
+	var body;
+	var logCount;
+
+	$(function () {
+		container = $('#event-info-log');
+		body = $('#event-info-log-body');
+		logCount = $('#event-info-log-count');
+	});
+
+	Event.subscribe('event-selected', function (e, event) {
+		display(event);
+	});
+
+	Event.subscribe('state-cleared', function () {
+		reset();
+	});
+
+	function display(event) {
+		if (event.LogEvents.length > 0) {
+			logCount.text("(" + event.LogEvents.length + ")");
+
+			var list = $('<ul>');
+			for (var i = 0; i < event.LogEvents.length; i++) {
+			    var logEvent = event.LogEvents[i];
+				var li = $('<li>', {
+					html: "<strong>" + logEvent.LogType + ":</strong> " + logEvent.Message
+				});
+				list.append(li);
+			}
+
+			body.html(list);
+
+		} else {
+			reset();
+		}
+	}
+
+	function reset() {
+		body.text('No related log messages to display.');
+		logCount.text('(0)');
+	};
+
+})();
+
 Tracer.UI.EventInfo.Http = (function () {
 
-	var xxxx;
+	var wrapper;
 	var headers;
 	var url;
 	var method;
@@ -215,12 +280,12 @@ Tracer.UI.EventInfo.Http = (function () {
 	var selectedId;
 
 	$(function () {
-		xxxx = $('#event-info-http');
+		wrapper = $('#event-info-http');
 		headers = $('#event-info-http-headers-body');
 		url = $('#event-info-http-url');
 		method = $('#event-info-http-method');
 		statusCode = $('#event-info-http-status-code');
-		statusCodeIcon = xxxx.find('.status-icon');
+		statusCodeIcon = wrapper.find('.status-icon');
 	});
 
 	Event.subscribe('event-selected', function (e, event) {
@@ -243,7 +308,7 @@ Tracer.UI.EventInfo.Http = (function () {
 
 	function display(event) {
 		if (event.HttpRequest) {
-			xxxx.show();
+			wrapper.show();
 
 			url.text(event.HttpRequest.Uri);
 			method.text(event.HttpRequest.HttpMethod);
@@ -263,7 +328,7 @@ Tracer.UI.EventInfo.Http = (function () {
 
 
 		} else {
-			xxxx.hide();
+			wrapper.hide();
 			reset();
 		}
 	};

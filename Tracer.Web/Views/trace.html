@@ -46,7 +46,6 @@
 </head>
 <body>
 
-
     <div class="container">
 
         <div class="row">
@@ -109,7 +108,8 @@
 
             <div class="col-lg-12">
                 <div id="event-table-container" class="panel">
-                    <div id="event-table-container-body">
+                    
+                    <div id="event-table-container-body" class="panel-body in">
                         <!-- datatable generated table goes here. -->
                     </div>
 
@@ -127,127 +127,130 @@
         <div class="row">
 
             <div class="col-lg-6 ">
-                <div id="event-info-container" class="panel">
-
-                    <ul class="nav nav-tabs">
-                        <li class="active"><a href="#event-info-summary-tab" data-toggle="tab">Summary</a></li>
-                        <li><a href="#event-info-log-tab" data-toggle="tab">Log</a></li>
-                        <li><a href="#event-info-audit-tab" data-toggle="tab">Audit</a></li>
-                        <li><a href="#event-info-database-tab" data-toggle="tab">Database Queries</a></li>
-                    </ul>
+                <div id="event-info-container" class="pre-scrollable panel">
                     
-                    <div class="tab-content">
+                    <div class="panel-heading">
+                        <span id="event-info-summary-method-name" class="panel-title"></span>
+                        
+                        <span class="dropdown pull-right">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Options <span class="caret"></span></a>
                             
-                        <div class="tab-pane fade active in" id="event-info-summary-tab">
-                            
-                            <div id="event-info-general">
-                                <div class="info-header">
-                                    <a role="button" data-toggle="collapse" href="#event-info-general-body" aria-expanded="true" aria-controls="event-info-general-body">
-                                        <i class="glyphicon glyphicon-triangle-bottom"></i>
-                                        <strong>General</strong>
-                                    </a>
-                                </div>
-                                <div id="event-info-general-body" class="info-body collapse in">
-                                    <strong>Method name:</strong> <span id="event-info-summary-method-name"></span>
-                                    <br />
-                                    <strong>Parent method name:</strong> <span id="event-info-summary-parent-method-name"></span>
-                                    <br />
-                                    <strong>Time taken:</strong> <span id="event-info-summary-time-taken"></span>ms
-                                    <br />
-                                    <strong>Status:</strong>
-                                    <i class="status-icon success"></i>
-                                    <span id="event-info-summary-status"></span>
-                                    <br/>
-                                </div>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a id="event-info-children-expand">Expand all</a></li>
+                                <li><a id="event-info-children-collapse">Collapse all</a></li>
+                            </ul>
+                        </span>
+                    </div>
+
+                    <div id="event-info-body" class="tab-content panel-body in">
+                        
+                        <div id="event-info-general">
+                            <div class="info-header">
+                                <a role="button" data-toggle="collapse" href="#event-info-general-body" aria-expanded="true" aria-controls="event-info-general-body">
+                                    <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                    <strong>General</strong>
+                                </a>
                             </div>
+                            <div id="event-info-general-body" class="info-body collapse in">
+                                <strong>Parent method name:</strong> <span id="event-info-summary-parent-method-name"></span>
+                                <br />
+                                <strong>Time taken:</strong> <span id="event-info-summary-time-taken"></span>ms
+                                <br />
+                                <strong>Status:</strong>
+                                <i class="status-icon success"></i>
+                                <span id="event-info-summary-status"></span>
+                                <br/>
+                                <strong>Machine name:</strong> 
+                                <span id="event-info-summary-machine-name"></span>
+                            </div>
+                        </div>
 
-                            <div id="event-info-http">
-                                <div class="info-header">
-                                    <a role="button" data-toggle="collapse" href="#event-info-http-body" aria-expanded="true" aria-controls="event-info-http-body">
-                                        <i class="glyphicon glyphicon-triangle-bottom"></i>
-                                        <strong>Http Request</strong>
-                                    </a>
-                                </div>
-                                <div id="event-info-http-body" class="info-body collapse in">
-                                    <strong>Url:</strong> <span id="event-info-http-url"></span>
-                                    <br />
+                        <div id="event-info-http">
+                            <div class="info-header">
+                                <a role="button" data-toggle="collapse" href="#event-info-http-body" aria-expanded="true" aria-controls="event-info-http-body">
+                                    <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                    <strong>Http Request</strong>
+                                </a>
+                            </div>
+                            <div id="event-info-http-body" class="info-body collapse in">
+                                <strong>Url:</strong> <span id="event-info-http-url"></span>
+                                <br />
 
-                                    <strong>Http method:</strong> <span id="event-info-http-method"></span>
-                                    <br />
+                                <strong>Http method:</strong> <span id="event-info-http-method"></span>
+                                <br />
 
-                                    <strong>Http status code:</strong>
-                                    <i class="status-icon success"></i>
-                                    <span id="event-info-http-status-code"></span>
-                                    <br />
+                                <strong>Http status code:</strong>
+                                <i class="status-icon success"></i>
+                                <span id="event-info-http-status-code"></span>
+                                <br />
                                     
-                                    <!-- Selected event Http request headers start here. -->
-                                    <div>
-                                        <div id="event-info-http-headers" class="info-header">
-                                            <a role="button" data-toggle="collapse" href="#event-info-http-headers-body" aria-expanded="true" aria-controls="event-info-http-headers-body">
-                                                <i class="glyphicon glyphicon-triangle-bottom"></i>
-                                                <strong>Http Headers</strong>
-                                            </a>
-                                        </div>
-                                        <div id="event-info-http-headers-body" class="info-body collapse in">
-                                            
-                                        </div>
+                                <!-- Selected event Http request headers start here. -->
+                                <div>
+                                    <div id="event-info-http-headers" class="info-header">
+                                        <a role="button" data-toggle="collapse" href="#event-info-http-headers-body" aria-expanded="true" aria-controls="event-info-http-headers-body">
+                                            <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                            <strong>Http Headers</strong>
+                                        </a>
                                     </div>
+                                    <div id="event-info-http-headers-body" class="info-body collapse in">
+                                            
+                                    </div>
+                                </div>
 
-                                </div>
                             </div>
-                            
-                            <div id="event-info-arguments">
-                                <div class="info-header">
-                                    <a role="button" data-toggle="collapse" href="#event-info-arguments-body" aria-expanded="true" aria-controls="event-info-arguments-body">
-                                        <i class="glyphicon glyphicon-triangle-bottom"></i>
-                                        <strong>Arguments <span id="event-info-arguments-count">(0)</span></strong>
-                                    </a>
-                                </div>
-                                <div id="event-info-arguments-body" class="info-body collapse in">
-                                    
-                                </div>
-                            </div>
-                            
-                            <div id="event-info-returned-value">
-                                <div class="info-header">
-                                    <a role="button" data-toggle="collapse" href="#event-info-returned-value-body" aria-expanded="true" aria-controls="event-info-returned-value-body">
-                                        <i class="glyphicon glyphicon-triangle-bottom"></i>
-                                        <strong>Returned Value</strong>
-                                    </a>
-                                </div>
-                                <div id="event-info-returned-value-body" class="info-body collapse in">
-                                    
-                                </div>
-                            </div>
-                            
-                            <div id="event-info-error">
-                                <div class="info-header">
-                                    <a role="button" data-toggle="collapse" href="#event-info-error-body" aria-expanded="true" aria-controls="event-info-error-body">
-                                        <i class="glyphicon glyphicon-triangle-bottom"></i>
-                                        <strong>Errors</strong>
-                                    </a>
-                                </div>
-                                <div id="event-info-error-body" class="info-body collapse in">
-                                    <strong>Error message:</strong> <span id="event-info-error-message"></span> <br/>
-                                    <strong>Stack trace:</strong> <span id="event-info-error-stack-trace"></span>
-                                </div>
-                            </div>
-
                         </div>
-
-                        <div class="tab-pane fade" id="event-info-log-tab">
-                            Related log messages go here.
+                            
+                        <div id="event-info-arguments">
+                            <div class="info-header">
+                                <a role="button" data-toggle="collapse" href="#event-info-arguments-body" aria-expanded="true" aria-controls="event-info-arguments-body">
+                                    <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                    <strong>Arguments <span id="event-info-arguments-count">(0)</span></strong>
+                                </a>
+                            </div>
+                            <div id="event-info-arguments-body" class="info-body collapse in">
+                                    <!-- Dynamically generated list of arguments goes here. -->
+                            </div>
+                        </div>
+                            
+                        <div id="event-info-returned-value">
+                            <div class="info-header">
+                                <a role="button" data-toggle="collapse" href="#event-info-returned-value-body" aria-expanded="true" aria-controls="event-info-returned-value-body">
+                                    <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                    <strong>Returned Value</strong>
+                                </a>
+                            </div>
+                            <div id="event-info-returned-value-body" class="info-body collapse in">
+                                    
+                            </div>
+                        </div>
+                            
+                        <div id="event-info-error">
+                            <div class="info-header">
+                                <a role="button" data-toggle="collapse" href="#event-info-error-body" aria-expanded="true" aria-controls="event-info-error-body">
+                                    <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                    <strong>Errors</strong>
+                                </a>
+                            </div>
+                            <div id="event-info-error-body" class="info-body collapse in">
+                                <strong>Error message:</strong> <span id="event-info-error-message"></span> <br/>
+                                <strong>Stack trace:</strong> <span id="event-info-error-stack-trace"></span>
+                            </div>
                         </div>
                         
-                        <div class="tab-pane fade" id="event-info-audit-tab">
-                            Related audit messages go here.
-                        </div>
-                        
-                        <div class="tab-pane fade" id="event-info-database-tab">
-                            Related database queries go here.
+                        <div id="event-info-log">
+                            <div class="info-header">
+                                <a role="button" data-toggle="collapse" href="#event-info-log-body" aria-expanded="true" aria-controls="event-info-log-body">
+                                    <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                    <strong>Log Messages <span id="event-info-log-count">(0)</span></strong>
+                                </a>
+                            </div>
+                            <div id="event-info-log-body" class="info-body collapse in">
+                                <!-- Dynamically generated list of related log messages goes here. -->
+                            </div>
                         </div>
 
                     </div>
+
 
                     <div class="no-event-info-overlay">
                         <div class="overlay-message">
@@ -266,20 +269,26 @@
 
             <div class="col-lg-6 ">
                 <div id="event-tree-container" class="pre-scrollable panel">
-                    <div id="event-tree-container-header">
-                        <ul class="nav nav-tabs pull-right">
-                            <li>
-                                <a id="event-tree-expand" href="#" data-toggle="tab" class="glyphicon glyphicon-plus glyphicon-small"></a>
-                            </li>
-                            <li>
-                                <a id="event-tree-collapse" href="#" data-toggle="tab" class="active glyphicon glyphicon-minus glyphicon-small"></a>
-                            </li>
-                        </ul>
+                    
+                    <div id="event-tree-container-header" class="panel-heading">
+                        <span class="panel-title">Event Hierarchy</span>
+                        
+                        <span class="dropdown pull-right">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Options <span class="caret"></span></a>
+                            
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#" id="event-tree-expand">Expand all</a></li>
+                                <li><a href="#" id="event-tree-collapse">Collapse all</a></li>
+                            </ul>
+                        </span>
                     </div>
-                    <div id="event-tree-container-body">
-                        <!-- jstree generated tree goes here. -->
+                    <div id="event-tree-panel-body" class="panel-body in">
+                        
+                        <div id="event-tree-container-body">
+                            <!-- jstree generated tree goes here. -->
+                        </div>
                     </div>
-
+                    
                     <div class="overlay">
                         <div class="overlay-message">
                             <h5>No events to display.</h5>

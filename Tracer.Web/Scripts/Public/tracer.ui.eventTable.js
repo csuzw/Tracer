@@ -64,6 +64,9 @@ Tracer.UI.EventTable = (function () {
 
         dataTable = table.DataTable({
             data: [],
+            "paging":   false,
+            //"ordering": false,
+            "info":     false,
             columns: [
                 { data: 'MethodName' },
                 { data: 'TimeTakenInMilliseconds' },
@@ -81,13 +84,13 @@ Tracer.UI.EventTable = (function () {
             ],
             "scrollY": "270px",
             "scrollCollapse": true,
-            "iDisplayLength": 50,
+            
             "fnCreatedRow": onRowAdded,
             "language": {
                 "lengthMenu": "Show _MENU_ events",
                 "emptyTable": "No events to display.",
-                "sInfo": "Showing _START_ to _END_ of _TOTAL_ events",
-                "sInfoEmpty": ""
+                //"sInfo": "Showing _START_ to _END_ of _TOTAL_ events",
+                //"sInfoEmpty": ""
             }
         });
 
