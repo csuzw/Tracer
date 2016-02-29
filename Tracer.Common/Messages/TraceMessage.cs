@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Tracer.Common.Messages
 {
@@ -13,5 +12,6 @@ namespace Tracer.Common.Messages
         public string Exception { get; set; }
         public long TimeTakenInMilliseconds { get; set; }
         public string MachineName { get; set; }
+        public string WindowsUsername { get; set; }
     }
 }

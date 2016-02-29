@@ -163,3 +163,11 @@ body {
 .dataTables_filter {
     display: none; 
 }
+
+.list-group-item {
+    border-left: 0;
+    border-right: 0;
+    border-bottom: #ddd;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+}

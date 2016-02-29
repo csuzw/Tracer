@@ -62,7 +62,8 @@ Tracer.UI.EventInfo.General = (function () {
 	var timeTaken;
 	var status;
 	var statusIcon;
-    var machineName;
+	var machineName;
+    var windowsUsername;
 	var selectedId;
 
 	$(function () {
@@ -71,8 +72,9 @@ Tracer.UI.EventInfo.General = (function () {
 		parentMethodName = $('#event-info-summary-parent-method-name');
 		timeTaken = $('#event-info-summary-time-taken');
 		status = $('#event-info-summary-status');
-	    machineName = $('#event-info-summary-machine-name');
 		statusIcon = container.find('.status-icon');
+		machineName = $('#event-info-summary-machine-name');
+	    windowsUsername = $('#event-info--summary-windows-username');
 	});
 
 	Event.subscribe('event-selected', function (e, event) {
@@ -89,9 +91,20 @@ Tracer.UI.EventInfo.General = (function () {
 	function display(event) {
 		methodName.text(event.MethodName);
 		timeTaken.text(event.TimeTakenInMilliseconds);
-		status.text(event.IsSuccess == true ? "Success" : "Failed");
-		statusIcon.prop('class', event.IsSuccess ? "status-icon success" : "status-icon danger");
-	    machineName.text(event.MachineName);
+		
+		if (event.OnSuccessEvent) {
+			status.text("Success");
+			statusIcon.prop('class', "status-icon success");
+		} else if (event.OnExceptionEvent) {
+			status.text("Failed");
+			statusIcon.prop('class', "status-icon danger");
+		} else {
+			status.text("Pending");
+			statusIcon.prop('class', "status-icon warning");
+		}
+
+		machineName.text(event.MachineName);
+	    windowsUsername.text(event.OnEntryEvent.WindowsUsername);
 
 		var parentEvent = eventStore.search('MethodId', event.ParentMethodId);
 
@@ -244,13 +257,29 @@ Tracer.UI.EventInfo.Logs = (function () {
 
 	function display(event) {
 		if (event.LogEvents.length > 0) {
+
 			logCount.text("(" + event.LogEvents.length + ")");
 
-			var list = $('<ul>');
+			var list = $('<ul>', {
+			    "class": "list-group"
+			});
+
 			for (var i = 0; i < event.LogEvents.length; i++) {
-			    var logEvent = event.LogEvents[i];
-				var li = $('<li>', {
-					html: "<strong>" + logEvent.LogType + ":</strong> " + logEvent.Message
+
+				var logEvent = event.LogEvents[i];
+				
+				var date = Tracer.Utils.formatDate(new Date(logEvent.Timestamp));
+				var timeStamp = '<span class="pull-left"><strong>Timestamp: </strong>' + date + '</span>';
+				var logType = '<span class="pull-right"><strong>Type: </strong>' + logEvent.LogType + '</span>';
+			    var clearFix = '<span class="clearfix"></span>';
+			    var message = '<strong>Message: </strong> ' + logEvent.Message;
+
+			    var li = $('<li>', {
+			    	"class": "list-group-item",
+					html: timeStamp +
+						logType +
+						clearFix +
+						message
 				});
 				list.append(li);
 			}

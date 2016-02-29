@@ -20,7 +20,6 @@
     <script src="../scripts/public/jstree.httpRequestLabel.js"></script>
 
     <!-- tracer components. -->
-    
     <script src="../scripts/public/tracer.core.js"></script>
     <script src="../scripts/public/tracer.ui.core.js"></script>
     <script src="../scripts/public/tracer.ui.js"></script>
@@ -108,7 +107,7 @@
 
             <div class="col-lg-12">
                 <div id="event-table-container" class="panel">
-                    
+
                     <div id="event-table-container-body" class="panel-body in">
                         <!-- datatable generated table goes here. -->
                     </div>
@@ -128,13 +127,13 @@
 
             <div class="col-lg-6 ">
                 <div id="event-info-container" class="pre-scrollable panel">
-                    
+
                     <div class="panel-heading">
                         <span id="event-info-summary-method-name" class="panel-title"></span>
-                        
+
                         <span class="dropdown pull-right">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Options <span class="caret"></span></a>
-                            
+
                             <ul class="dropdown-menu" role="menu">
                                 <li><a id="event-info-children-expand">Expand all</a></li>
                                 <li><a id="event-info-children-collapse">Collapse all</a></li>
@@ -143,7 +142,7 @@
                     </div>
 
                     <div id="event-info-body" class="tab-content panel-body in">
-                        
+
                         <div id="event-info-general">
                             <div class="info-header">
                                 <a role="button" data-toggle="collapse" href="#event-info-general-body" aria-expanded="true" aria-controls="event-info-general-body">
@@ -159,9 +158,13 @@
                                 <strong>Status:</strong>
                                 <i class="status-icon success"></i>
                                 <span id="event-info-summary-status"></span>
-                                <br/>
-                                <strong>Machine name:</strong> 
+                                <br />
+                                <strong>Machine name:</strong>
                                 <span id="event-info-summary-machine-name"></span>
+                                <br />
+                                <strong>Windows username:</strong>
+                                <span id="event-info--summary-windows-username"></span>
+                                <br />
                             </div>
                         </div>
 
@@ -183,7 +186,7 @@
                                 <i class="status-icon success"></i>
                                 <span id="event-info-http-status-code"></span>
                                 <br />
-                                    
+
                                 <!-- Selected event Http request headers start here. -->
                                 <div>
                                     <div id="event-info-http-headers" class="info-header">
@@ -193,13 +196,12 @@
                                         </a>
                                     </div>
                                     <div id="event-info-http-headers-body" class="info-body collapse in">
-                                            
                                     </div>
                                 </div>
 
                             </div>
                         </div>
-                            
+
                         <div id="event-info-arguments">
                             <div class="info-header">
                                 <a role="button" data-toggle="collapse" href="#event-info-arguments-body" aria-expanded="true" aria-controls="event-info-arguments-body">
@@ -208,10 +210,10 @@
                                 </a>
                             </div>
                             <div id="event-info-arguments-body" class="info-body collapse in">
-                                    <!-- Dynamically generated list of arguments goes here. -->
+                                <!-- Dynamically generated list of arguments goes here. -->
                             </div>
                         </div>
-                            
+
                         <div id="event-info-returned-value">
                             <div class="info-header">
                                 <a role="button" data-toggle="collapse" href="#event-info-returned-value-body" aria-expanded="true" aria-controls="event-info-returned-value-body">
@@ -220,10 +222,9 @@
                                 </a>
                             </div>
                             <div id="event-info-returned-value-body" class="info-body collapse in">
-                                    
                             </div>
                         </div>
-                            
+
                         <div id="event-info-error">
                             <div class="info-header">
                                 <a role="button" data-toggle="collapse" href="#event-info-error-body" aria-expanded="true" aria-controls="event-info-error-body">
@@ -232,11 +233,12 @@
                                 </a>
                             </div>
                             <div id="event-info-error-body" class="info-body collapse in">
-                                <strong>Error message:</strong> <span id="event-info-error-message"></span> <br/>
+                                <strong>Error message:</strong> <span id="event-info-error-message"></span>
+                                <br />
                                 <strong>Stack trace:</strong> <span id="event-info-error-stack-trace"></span>
                             </div>
                         </div>
-                        
+
                         <div id="event-info-log">
                             <div class="info-header">
                                 <a role="button" data-toggle="collapse" href="#event-info-log-body" aria-expanded="true" aria-controls="event-info-log-body">
@@ -246,6 +248,32 @@
                             </div>
                             <div id="event-info-log-body" class="info-body collapse in">
                                 <!-- Dynamically generated list of related log messages goes here. -->
+                            </div>
+                        </div>
+                        
+                        <div id="event-info-audit">
+                            <div class="info-header">
+                                <a role="button" data-toggle="collapse" href="#event-info-audit-body" aria-expanded="true" aria-controls="event-info-audit-body">
+                                    <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                    <strong>Audit Messages <span id="event-info-audit-count">(0)</span></strong>
+                                </a>
+                            </div>
+                            <div id="event-info-audit-body" class="info-body collapse in">
+                                <!-- Dynamically generated list of related audit messages goes here. -->
+                                No related audit messages to display.
+                            </div>
+                        </div>
+                        
+                        <div id="event-info-database-queries">
+                            <div class="info-header">
+                                <a role="button" data-toggle="collapse" href="#event-info-database-queries-body" aria-expanded="true" aria-controls="event-info-database-queries-body">
+                                    <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                    <strong>Database Queries <span id="event-info-database-queries-count">(0)</span></strong>
+                                </a>
+                            </div>
+                            <div id="event-info-database-queries-body" class="info-body collapse in">
+                                <!-- Dynamically generated list of related database queries goes here. -->
+                                No related database queries to display.
                             </div>
                         </div>
 
@@ -269,13 +297,13 @@
 
             <div class="col-lg-6 ">
                 <div id="event-tree-container" class="pre-scrollable panel">
-                    
+
                     <div id="event-tree-container-header" class="panel-heading">
                         <span class="panel-title">Event Hierarchy</span>
-                        
+
                         <span class="dropdown pull-right">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Options <span class="caret"></span></a>
-                            
+
                             <ul class="dropdown-menu" role="menu">
                                 <li><a href="#" id="event-tree-expand">Expand all</a></li>
                                 <li><a href="#" id="event-tree-collapse">Collapse all</a></li>
@@ -283,12 +311,12 @@
                         </span>
                     </div>
                     <div id="event-tree-panel-body" class="panel-body in">
-                        
+
                         <div id="event-tree-container-body">
                             <!-- jstree generated tree goes here. -->
                         </div>
                     </div>
-                    
+
                     <div class="overlay">
                         <div class="overlay-message">
                             <h5>No events to display.</h5>

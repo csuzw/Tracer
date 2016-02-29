@@ -16,8 +16,8 @@ namespace Tracer.Application.Logic
             "A {0} happened.",
             "{0}! {0}! {0}!",
             "What noise does a fox make?",
-            "What is this shit?",
-            "Jamie sucks!"
+            "Something interesting?",
+            "I am broken!"
         };
 
         protected abstract int MaxDepth { get; }

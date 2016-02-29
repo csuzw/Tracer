@@ -34,6 +34,8 @@ namespace Tracer.PostSharp
             var methodId = Guid.NewGuid().ToString();
             var parentMethodId = PeekAndPushParentMethodId(methodId, args.Instance);
 
+            var windowsUser = System.Security.Principal.WindowsIdentity.GetCurrent();
+
             var message = new TraceMessage
             {
                 TraceId = traceId,
@@ -44,6 +46,7 @@ namespace Tracer.PostSharp
                 MethodName = _methodName,
                 Arguments = args.GetMethodArguments(),
                 MachineName = Environment.MachineName,
+                WindowsUsername = windowsUser != null ? windowsUser.Name : "Unknown",
             };
 
             message.Broadcast();

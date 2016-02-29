@@ -129,12 +129,15 @@ Tracer.UI.EventTree = (function () {
         var node = findNodeById(event.MethodId);
         if (node) {
 
-            if (event.IsSuccess) {
+            if (event.OnSuccessEvent) {
                 node.text = event.MethodName + " (Success)";
                 node.icon = 'glyphicon glyphicon-ok';
-            } else {
+            } else if (event.OnExceptionEvent) {
                 node.text = event.MethodName + " (Failed)";
                 node.icon = 'glyphicon glyphicon-remove';
+            } else {
+                node.text = event.MethodName + " (Pending)";
+                node.icon = 'glyphicon glyphicon-time';
             }
 
             if (event.HttpRequest) {

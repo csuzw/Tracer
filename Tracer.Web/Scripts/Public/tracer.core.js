@@ -1,11 +1,10 @@
 ﻿// TODO: Bug multiple trace root events sometimes appear in the EventTree.
 // TODO: Add import complete toast.
 // TODO: Ability to save / load state to/from local storage.
-// TODO: Fix event tree issue all methods are failed until successful.
-// TODO: Fix event summary method status showing failed when should show pending.
 // TODO: Split HTTP info into request / response and show headers / content.
 // TODO: Display HTTP Response headers too.
-// TODO: Fix issue with navbar showing errors when there aren't  any.
+// TODO: Fix issue with event info carets not being set correct when expanding / collapsing.
+// TODO: Fix issue with event info no event selected overlay not being displayed after state is cleared.
 
 /*
     Pub/Sub implementation inspired by Addy Osmani's JS patterns.
