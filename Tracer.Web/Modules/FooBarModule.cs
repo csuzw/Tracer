@@ -20,7 +20,7 @@ namespace Tracer.Web.Modules
 
                 var request = new HttpRequestMessage(HttpMethod.Get, new Uri(uri));
 
-                return _httpHelper.Get(request);
+                return _httpHelper.Get(request).Content.ReadAsStringAsync().Result;
             };
         }
     }
