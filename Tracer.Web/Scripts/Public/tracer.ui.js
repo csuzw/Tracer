@@ -24,17 +24,27 @@ Tracer.UI.EventStreamNotification = (function () {
 Tracer.UI.Collapsible = (function () {
 
     $(function () {
-        $('.info-body').on('hidden.bs.collapse', toggleIcon);
-        $('.info-body').on('shown.bs.collapse', toggleIcon);
+        $('.info-body').on('hidden.bs.collapse', close);
+        $('.info-body').on('shown.bs.collapse', open);
     });
 
-    function toggleIcon(e) {
+    function close(e) {
         $(e.target)
             .prev('.info-header')
             .find('i')
-            .toggleClass('glyphicon-triangle-bottom glyphicon-triangle-right');
+            .removeClass('glyphicon-triangle-bottom')
+            .addClass('glyphicon-triangle-right');
         return false;
-    }
+    };
+
+    function open(e) {
+        $(e.target)
+            .prev('.info-header')
+            .find('i')
+            .removeClass('')
+            .addClass('glyphicon-triangle-bottom');
+        return false;
+    };
 
 })();
 

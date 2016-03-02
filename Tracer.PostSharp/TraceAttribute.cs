@@ -78,7 +78,7 @@ namespace Tracer.PostSharp
             args.MethodExecutionTag = new TraceAttributeContext(traceId, methodId, parentMethodId);
         }
 
-        public override void OnSuccess(MethodExecutionArgs args)
+        public override async void OnSuccess(MethodExecutionArgs args)
         {
             var context = (TraceAttributeContext)args.MethodExecutionTag;
             context.Stopwatch.Stop();
@@ -94,7 +94,7 @@ namespace Tracer.PostSharp
                     MethodId = context.MethodId,
                     Timestamp = DateTime.Now,
                     Headers = httpResponse.Headers.GetHeaders(),
-                    Content = httpResponse.Content.ToString(),
+                    Content = (httpResponse.Content != null) ? await httpResponse.Content.ReadAsStringAsync() : "",
                     HttpStatusCode = httpResponse.StatusCode,         
                 };
 
@@ -131,6 +131,7 @@ namespace Tracer.PostSharp
                 TraceEvent = TraceEvent.OnMethodException,
                 Timestamp = DateTime.Now,
                 MethodName = _methodName,
+                ExceptionMessage = (args.Exception != null) ? args.Exception.Message : string.Empty,
                 Exception = (args.Exception != null) ? args.Exception.ToString() : string.Empty,
                 TimeTakenInMilliseconds = context.Stopwatch.ElapsedMilliseconds
             };

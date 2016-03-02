@@ -16,7 +16,7 @@
     <script src="../scripts/vendor/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
     <!-- required for file tree visualization of event. -->
     <script src="../scripts/vendor/jstree/dist/jstree.js"></script>
-
+    <!-- required for display http information in the event tree -->
     <script src="../scripts/public/jstree.httpRequestLabel.js"></script>
 
     <!-- tracer components. -->
@@ -167,18 +167,18 @@
                                 </a>
                             </div>
                             <div id="event-info-general-body" class="info-body collapse in">
-                                <strong>Parent method name:</strong> <span id="event-info-summary-parent-method-name"></span>
+                                <strong>Parent Method Name:</strong> <span id="event-info-summary-parent-method-name"></span>
                                 <br />
-                                <strong>Time taken:</strong> <span id="event-info-summary-time-taken"></span>ms
+                                <strong>Time Taken:</strong> <span id="event-info-summary-time-taken"></span>ms
                                 <br />
                                 <strong>Status:</strong>
                                 <i class="status-icon success"></i>
                                 <span id="event-info-summary-status"></span>
                                 <br />
-                                <strong>Machine name:</strong>
+                                <strong>Machine Name:</strong>
                                 <span id="event-info-summary-machine-name"></span>
                                 <br />
-                                <strong>Windows username:</strong>
+                                <strong>Windows Username:</strong>
                                 <span id="event-info--summary-windows-username"></span>
                                 <br />
                             </div>
@@ -195,26 +195,45 @@
                                 <strong>Url:</strong> <span id="event-info-http-url"></span>
                                 <br />
 
-                                <strong>Http method:</strong> <span id="event-info-http-method"></span>
+                                <strong>Http Method:</strong> <span id="event-info-http-method"></span>
                                 <br />
 
-                                <strong>Http status code:</strong>
+                                <strong>Http Status Code:</strong>
                                 <i class="status-icon success"></i>
                                 <span id="event-info-http-status-code"></span>
                                 <br />
 
                                 <!-- Selected event Http request headers start here. -->
                                 <div>
-                                    <div id="event-info-http-headers" class="info-header">
-                                        <a role="button" data-toggle="collapse" href="#event-info-http-headers-body" aria-expanded="true" aria-controls="event-info-http-headers-body">
+                                    <div id="event-info-http-request-headers" class="info-header">
+                                        <a role="button" data-toggle="collapse" href="#event-info-http-request-headers-body" aria-expanded="true" aria-controls="event-info-http-request-headers-body">
                                             <i class="glyphicon glyphicon-triangle-bottom"></i>
-                                            <strong>Http Headers</strong>
+                                            <strong>Http Request Headers</strong>
                                         </a>
                                     </div>
-                                    <div id="event-info-http-headers-body" class="info-body collapse in">
+                                    <div id="event-info-http-request-headers-body" class="info-body collapse in">
+                                    </div>
+                                </div>
+                                
+                                <!-- Selected event Http response headers start here. -->
+                                <div>
+                                    <div id="event-info-http-response-headers" class="info-header">
+                                        <a role="button" data-toggle="collapse" href="#event-info-http-response-headers-body" aria-expanded="true" aria-controls="event-info-http-response-headers-body">
+                                            <i class="glyphicon glyphicon-triangle-bottom"></i>
+                                            <strong>Http Response Headers</strong>
+                                        </a>
+                                    </div>
+                                    <div id="event-info-http-response-headers-body" class="info-body collapse in">
                                     </div>
                                 </div>
 
+                                <strong>Http Request Content:</strong>
+                                <span id="event-info-http-request-content"></span>
+                                <br/>
+                                
+                                <strong>Http Response Content:</strong>
+                                <span id="event-info-http-response-content"></span>
+                                <br/>
                             </div>
                         </div>
 
@@ -249,9 +268,9 @@
                                 </a>
                             </div>
                             <div id="event-info-error-body" class="info-body collapse in">
-                                <strong>Error message:</strong> <span id="event-info-error-message"></span>
+                                <strong>Error Message:</strong> <span id="event-info-error-message"></span>
                                 <br />
-                                <strong>Stack trace:</strong> <span id="event-info-error-stack-trace"></span>
+                                <strong>Stack Trace:</strong> <span id="event-info-error-stack-trace"></span>
                             </div>
                         </div>
 

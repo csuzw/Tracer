@@ -140,8 +140,8 @@ Tracer.UI.EventInfo.Errors = (function () {
     });
 
 	function display(event) {
-		if (event.OnExceptionEvent) {
-			errorMessage.text('No error message to display.');
+	    if (event.OnExceptionEvent) {
+			errorMessage.text(event.OnExceptionEvent.ExceptionMessage);
 			stackTrace.text(event.OnExceptionEvent.Exception);
 		} else {
 			errorMessage.text('No error message to display.');
@@ -300,8 +300,11 @@ Tracer.UI.EventInfo.Logs = (function () {
 
 Tracer.UI.EventInfo.Http = (function () {
 
-	var wrapper;
-	var headers;
+    var wrapper;
+	var requestHeaders;
+    var requestContent;
+	var responseHeaders;
+    var responseContent;
 	var url;
 	var method;
 	var statusCode;
@@ -309,8 +312,11 @@ Tracer.UI.EventInfo.Http = (function () {
 	var selectedId;
 
 	$(function () {
-		wrapper = $('#event-info-http');
-		headers = $('#event-info-http-headers-body');
+	    wrapper = $('#event-info-http');
+		requestHeaders = $('#event-info-http-request-headers-body');
+	    requestContent = $('#event-info-http-request-content');
+	    responseHeaders = $('#event-info-http-response-headers-body');
+	    responseContent = $('#event-info-http-response-content');
 		url = $('#event-info-http-url');
 		method = $('#event-info-http-method');
 		statusCode = $('#event-info-http-status-code');
@@ -344,23 +350,55 @@ Tracer.UI.EventInfo.Http = (function () {
 
 			displayHttpStatusCode(event.HttpResponse);
 
-			if (event.HttpRequest.Headers) {
-				var list = $('<ul>');
-				for (var headerName in event.HttpRequest.Headers) {
-					var li = $('<li>', {
-						html: "<strong>" + headerName + ":</strong> " + event.HttpRequest.Headers[headerName]
-					});
-					list.append(li);
-				}
-				headers.html(list);
-			}
+			displayHttpRequestHeaders(event.HttpRequest);
 
-
+		    if (event.HttpRequest.Content.length > 0) {
+		        requestContent.text(event.HttpRequest.Content);
+		    } else {
+		        requestContent.text('No request content to display.');
+		    }
 		} else {
 			wrapper.hide();
 			reset();
 		}
+
+        if (event.HttpResponse) {
+
+            displayHttpResponseHeaders(event.HttpResponse);
+
+            if (event.HttpResponse.Content.length > 0) {
+                responseContent.text(event.HttpResponse.Content);
+            } else {
+                responseContent.text('No response content to display.');
+            }
+        }
 	};
+
+    function displayHttpRequestHeaders(httpRequest) {
+        if (httpRequest && httpRequest.Headers) {
+            var list = $('<ul>');
+            for (var headerName in httpRequest.Headers) {
+                var li = $('<li>', {
+                    html: "<strong>" + headerName + ":</strong> " + httpRequest.Headers[headerName]
+                });
+                list.append(li);
+            }
+            requestHeaders.html(list);
+        }
+    }
+
+    function displayHttpResponseHeaders(httpResponse) {
+        if (httpResponse && httpResponse.Headers) {
+            var list = $('<ul>');
+            for (var headerName in httpResponse.Headers) {
+                var li = $('<li>', {
+                    html: "<strong>" + headerName + ":</strong> " + httpResponse.Headers[headerName]
+                });
+                list.append(li);
+            }
+            responseHeaders.html(list);
+        }
+    }
 
 	function displayHttpStatusCode(httpStatusResponse) {
 
@@ -382,7 +420,10 @@ Tracer.UI.EventInfo.Http = (function () {
 		method.text('');
 		statusCode.text('');
 		statusCodeIcon.prop('class', 'status-icon warning');
-		headers.empty();
+		requestHeaders.empty();
+		requestContent.text('');
+		responseHeaders.empty();
+		responseContent.text('');
 	};
 
 })();
